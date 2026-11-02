@@ -1,0 +1,47 @@
+# ==========================================
+# .gitignore - Frontend Web & Static Sites
+# ==========================================
+
+# OS Generated Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# Editor & IDE Directories
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.swp
+*.swo
+*~
+.project
+.settings/
+
+# Logs & Temporary Files
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+.cache/
+/tmp/
+
+# Dependency & Build Artifacts (Future Proofing)
+node_modules/
+dist/
+build/
+out/
+coverage/
+
+# Secrets & Environment Variables
+.env
+.env.local
+.env.*.local
+*.pem
+*.key

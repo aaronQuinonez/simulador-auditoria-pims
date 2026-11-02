@@ -1,0 +1,2148 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+  <title>Simulador de Examen Parcial - Tema 11: ISO 27018 & ISO 29151 (Anexo E) | Auditoría de Sistemas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-main: #0a0e17;
+      --bg-card: #101726;
+      --bg-card-hover: #162238;
+      --bg-surface: #1c273c;
+      --bg-surface-elevated: #26354f;
+      
+      --border-subtle: #1c283f;
+      --border-light: #334155;
+      --border-accent: #06b6d4;
+
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dark: #64748b;
+
+      --accent-cyan: #06b6d4;
+      --accent-cyan-glow: rgba(6, 182, 212, 0.25);
+      --accent-blue: #3b82f6;
+      --accent-blue-glow: rgba(59, 130, 246, 0.25);
+      --accent-emerald: #10b981;
+      --accent-emerald-glow: rgba(16, 185, 129, 0.25);
+      --accent-rose: #ef4444;
+      --accent-rose-glow: rgba(239, 68, 68, 0.25);
+      --accent-amber: #f59e0b;
+      --accent-purple: #8b5cf6;
+
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-xl: 20px;
+
+      --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
+      --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+      --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.5);
+
+      --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-mono: "Fira Code", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      width: 100%;
+      max-width: 100vw;
+      overflow-x: hidden;
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Accessibility focus ring */
+    button:focus-visible, a:focus-visible {
+      outline: 2px solid var(--accent-cyan);
+      outline-offset: 2px;
+    }
+
+    /* Top Progress Bar - Fixed at topmost */
+    .top-progress-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: rgba(15, 23, 42, 0.8);
+      z-index: 1000;
+    }
+
+    .top-progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent-cyan), var(--accent-blue), var(--accent-emerald));
+      transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 0 10px var(--accent-cyan-glow);
+    }
+
+    /* Header & Navigation */
+    header {
+      background: rgba(16, 23, 38, 0.92);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-subtle);
+      position: sticky;
+      top: 0;
+      z-index: 900;
+      width: 100%;
+    }
+
+    .nav-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: clamp(10px, 2vw, 14px) clamp(14px, 3vw, 24px);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .brand-icon {
+      width: 44px;
+      height: 44px;
+      min-width: 44px;
+      background: linear-gradient(135deg, rgba(6, 182, 212, 0.2), rgba(59, 130, 246, 0.25));
+      border: 1px solid rgba(6, 182, 212, 0.4);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent-cyan);
+      box-shadow: 0 0 15px rgba(6, 182, 212, 0.2);
+    }
+
+    .brand-icon svg {
+      width: 24px;
+      height: 24px;
+    }
+
+    .brand-text h1 {
+      font-size: clamp(0.95rem, 2.5vw, 1.15rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .brand-badge {
+      display: inline-flex;
+      align-items: center;
+      font-size: 0.68rem;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 9999px;
+      background: rgba(6, 182, 212, 0.15);
+      color: var(--accent-cyan);
+      border: 1px solid rgba(6, 182, 212, 0.35);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .brand-badge-cloud {
+      display: inline-flex;
+      align-items: center;
+      font-size: 0.68rem;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 9999px;
+      background: rgba(139, 92, 246, 0.15);
+      color: #c084fc;
+      border: 1px solid rgba(139, 92, 246, 0.35);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .brand-text p {
+      font-size: clamp(0.72rem, 1.8vw, 0.8rem);
+      color: var(--text-muted);
+      margin-top: 1px;
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .topic-link-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: var(--bg-surface);
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.78rem;
+      font-weight: 600;
+      padding: 8px 12px;
+      min-height: 40px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-subtle);
+      transition: all 0.2s ease;
+    }
+
+    .topic-link-pill:hover {
+      background: var(--bg-surface-elevated);
+      color: var(--text-main);
+      border-color: var(--accent-cyan);
+    }
+
+    .topic-link-pill.active {
+      background: rgba(6, 182, 212, 0.18);
+      color: var(--accent-cyan);
+      border-color: var(--accent-cyan);
+    }
+
+    /* Mode switcher */
+    .view-toggle {
+      display: flex;
+      background: var(--bg-main);
+      padding: 3px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .view-toggle-btn {
+      min-height: 38px;
+      padding: 6px 12px;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 0.76rem;
+      font-weight: 600;
+      border-radius: calc(var(--radius-md) - 3px);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .view-toggle-btn.active {
+      background: var(--bg-surface-elevated);
+      color: var(--accent-cyan);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    }
+
+    /* Sound FX Toggle & Finish Buttons */
+    .btn-icon-toggle {
+      min-height: 48px;
+      min-width: 48px;
+      width: 48px;
+      height: 48px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+
+    .btn-icon-toggle:hover {
+      background: var(--bg-surface-elevated);
+      color: var(--text-main);
+      border-color: var(--border-light);
+    }
+
+    .btn-finish-exam {
+      min-height: 48px;
+      background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+      color: #ffffff;
+      border: none;
+      border-radius: var(--radius-md);
+      padding: 0 18px;
+      font-size: 0.84rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 4px 14px var(--accent-cyan-glow);
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .btn-finish-exam:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 18px rgba(6, 182, 212, 0.4);
+    }
+
+    .timer-pill {
+      min-height: 40px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 6px 12px;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .timer-pill .dot {
+      width: 6px;
+      height: 6px;
+      background: var(--accent-emerald);
+      border-radius: 50%;
+      animation: pulse 1.8s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+
+    /* Main Container */
+    main {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: clamp(14px, 3vw, 24px);
+      width: 100%;
+    }
+
+    /* Dashboard Header */
+    .dashboard-header {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 20px;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+
+    @media (max-width: 900px) {
+      .dashboard-header {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .stats-ribbon {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+
+    @media (max-width: 768px) {
+      .stats-ribbon {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    .stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.2s ease, transform 0.2s ease;
+    }
+
+    .stat-card::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 3px;
+      height: 100%;
+      background: var(--card-accent, var(--border-light));
+    }
+
+    .stat-card.stat-progress { --card-accent: var(--accent-cyan); }
+    .stat-card.stat-correct { --card-accent: var(--accent-emerald); }
+    .stat-card.stat-incorrect { --card-accent: var(--accent-rose); }
+    .stat-card.stat-score { --card-accent: var(--accent-purple); }
+
+    .stat-card:hover {
+      border-color: var(--border-light);
+      transform: translateY(-1px);
+    }
+
+    .stat-label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .stat-value {
+      font-size: clamp(1.2rem, 3vw, 1.5rem);
+      font-weight: 700;
+      margin-top: 4px;
+      font-family: var(--font-mono);
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+    }
+
+    .stat-sub {
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--text-dark);
+      font-family: var(--font-sans);
+    }
+
+    /* Filter Bar - Touch friendly and scrollable */
+    .filter-section {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 12px 16px;
+      margin-bottom: 24px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .filter-label-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-muted);
+      font-size: 0.78rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .filter-buttons {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: 4px;
+      scrollbar-width: thin;
+      max-width: 100%;
+    }
+
+    .filter-buttons::-webkit-scrollbar {
+      height: 4px;
+    }
+
+    .filter-buttons::-webkit-scrollbar-thumb {
+      background: var(--border-light);
+      border-radius: 4px;
+    }
+
+    .filter-btn {
+      min-height: 48px;
+      padding: 10px 18px;
+      background: var(--bg-surface);
+      color: var(--text-muted);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      font-size: clamp(0.8rem, 2vw, 0.88rem);
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+      transition: all 0.2s ease;
+      touch-action: manipulation;
+    }
+
+    .filter-btn:hover {
+      background: var(--bg-surface-elevated);
+      color: var(--text-main);
+      border-color: var(--border-light);
+    }
+
+    .filter-btn.active {
+      background: rgba(6, 182, 212, 0.16);
+      color: var(--accent-cyan);
+      border-color: var(--accent-cyan);
+      box-shadow: 0 0 12px rgba(6, 182, 212, 0.15);
+    }
+
+    .filter-btn .count-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 2px 7px;
+      border-radius: 9999px;
+      font-size: 0.74rem;
+      font-family: var(--font-mono);
+    }
+
+    /* Question Grid / Palette for quick jump */
+    .question-nav-strip {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 14px 18px;
+      margin-bottom: 24px;
+    }
+
+    .strip-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .palette-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(48px, 1fr));
+      gap: 8px;
+    }
+
+    .palette-btn {
+      min-height: 48px;
+      min-width: 48px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg-surface);
+      color: var(--text-muted);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      font-family: var(--font-mono);
+      font-size: 0.88rem;
+      font-weight: 700;
+      cursor: pointer;
+      position: relative;
+      transition: all 0.2s ease;
+      touch-action: manipulation;
+    }
+
+    .palette-btn:hover {
+      background: var(--bg-surface-elevated);
+      color: var(--text-main);
+      border-color: var(--border-light);
+    }
+
+    .palette-btn.current {
+      border-color: var(--accent-cyan);
+      box-shadow: 0 0 0 2px var(--accent-cyan);
+      color: var(--text-main);
+      background: var(--bg-surface-elevated);
+    }
+
+    .palette-btn.correct {
+      background: rgba(16, 185, 129, 0.18);
+      border-color: var(--accent-emerald);
+      color: var(--accent-emerald);
+    }
+
+    .palette-btn.incorrect {
+      background: rgba(239, 68, 68, 0.18);
+      border-color: var(--accent-rose);
+      color: var(--accent-rose);
+    }
+
+    /* Main Question Card Area */
+    .exam-container {
+      margin-bottom: 40px;
+    }
+
+    .question-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-xl);
+      padding: clamp(18px, 4vw, 32px);
+      box-shadow: var(--shadow-md);
+      margin-bottom: 24px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.2s ease;
+    }
+
+    .question-card:hover {
+      border-color: var(--border-light);
+    }
+
+    .question-card-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 18px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .question-number-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-mono);
+      font-size: 0.84rem;
+      font-weight: 700;
+      color: var(--accent-cyan);
+    }
+
+    .question-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .badge-teoria {
+      background: rgba(6, 182, 212, 0.15);
+      color: var(--accent-cyan);
+      border: 1px solid rgba(6, 182, 212, 0.3);
+    }
+
+    .badge-casos {
+      background: rgba(139, 92, 246, 0.15);
+      color: #c084fc;
+      border: 1px solid rgba(139, 92, 246, 0.3);
+    }
+
+    .question-text {
+      font-size: clamp(1rem, 2.5vw, 1.22rem);
+      font-weight: 600;
+      color: var(--text-main);
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+
+    /* Options List - Mobile First Touch Targets */
+    .options-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .option-btn {
+      width: 100%;
+      min-height: 52px;
+      background: var(--bg-surface);
+      border: 1.5px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: clamp(12px, 2.5vw, 16px) clamp(14px, 3vw, 20px);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      font-size: clamp(0.95rem, 2vw, 1.05rem);
+      font-weight: 500;
+      text-align: left;
+      cursor: pointer;
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      touch-action: manipulation;
+    }
+
+    .option-btn:hover:not(:disabled) {
+      background: var(--bg-surface-elevated);
+      border-color: var(--accent-cyan);
+      transform: translateX(3px);
+    }
+
+    .option-btn:disabled {
+      cursor: default;
+    }
+
+    .option-letter {
+      min-width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg-card);
+      border: 1px solid var(--border-light);
+      border-radius: 6px;
+      font-family: var(--font-mono);
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      flex-shrink: 0;
+      transition: all 0.2s ease;
+    }
+
+    .option-content {
+      flex: 1;
+      padding-top: 3px;
+      line-height: 1.55;
+    }
+
+    /* State feedback classes */
+    .option-btn.selected-correct,
+    .option-btn.reveal-correct {
+      background: rgba(16, 185, 129, 0.12) !important;
+      border-color: var(--accent-emerald) !important;
+      color: #ffffff !important;
+      box-shadow: 0 0 16px var(--accent-emerald-glow) !important;
+    }
+
+    .option-btn.selected-correct .option-letter,
+    .option-btn.reveal-correct .option-letter {
+      background: var(--accent-emerald);
+      color: #042f2e;
+      border-color: var(--accent-emerald);
+      font-weight: 800;
+    }
+
+    .option-btn.selected-incorrect {
+      background: rgba(239, 68, 68, 0.12) !important;
+      border-color: var(--accent-rose) !important;
+      color: #ffffff !important;
+      box-shadow: 0 0 16px var(--accent-rose-glow) !important;
+    }
+
+    .option-btn.selected-incorrect .option-letter {
+      background: var(--accent-rose);
+      color: #ffffff;
+      border-color: var(--accent-rose);
+      font-weight: 800;
+    }
+
+    .option-status-icon {
+      margin-left: auto;
+      flex-shrink: 0;
+      display: none;
+      align-self: center;
+    }
+
+    .option-btn.selected-correct .option-status-icon,
+    .option-btn.reveal-correct .option-status-icon {
+      display: block;
+      color: var(--accent-emerald);
+    }
+
+    .option-btn.selected-incorrect .option-status-icon {
+      display: block;
+      color: var(--accent-rose);
+    }
+
+    /* Justification Box - Immediate display */
+    .justification-box {
+      background: linear-gradient(180deg, rgba(16, 23, 38, 0.95), rgba(10, 14, 23, 0.95));
+      border: 1px solid var(--accent-cyan);
+      border-left: 4px solid var(--accent-cyan);
+      border-radius: var(--radius-md);
+      padding: clamp(14px, 3vw, 20px);
+      margin-top: 20px;
+      display: none;
+      animation: slideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .justification-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--accent-cyan);
+      margin-bottom: 8px;
+    }
+
+    .justification-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+
+    .just-badge {
+      font-size: 0.68rem;
+      font-family: var(--font-mono);
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: rgba(6, 182, 212, 0.15);
+      color: var(--accent-cyan);
+      border: 1px solid rgba(6, 182, 212, 0.3);
+    }
+
+    .just-badge-27018 {
+      background: rgba(59, 130, 246, 0.15);
+      color: #93c5fd;
+      border-color: rgba(59, 130, 246, 0.3);
+    }
+
+    .just-badge-29151 {
+      background: rgba(139, 92, 246, 0.15);
+      color: #d8b4fe;
+      border-color: rgba(139, 92, 246, 0.3);
+    }
+
+    .justification-text {
+      font-size: clamp(0.9rem, 2vw, 0.98rem);
+      color: #cbd5e1;
+      line-height: 1.6;
+    }
+
+    /* Focus Mode Footer Navigation */
+    .card-footer-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-top: 24px;
+      padding-top: 18px;
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    .nav-btn {
+      min-height: 48px;
+      padding: 10px 20px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      color: var(--text-main);
+      font-size: 0.86rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+      touch-action: manipulation;
+    }
+
+    .nav-btn:hover:not(:disabled) {
+      background: var(--bg-surface-elevated);
+      border-color: var(--accent-cyan);
+    }
+
+    .nav-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .nav-btn-primary {
+      background: var(--accent-cyan);
+      color: #042f2e;
+      font-weight: 700;
+      border: none;
+    }
+
+    .nav-btn-primary:hover:not(:disabled) {
+      background: #22d3ee;
+      box-shadow: 0 0 14px var(--accent-cyan-glow);
+    }
+
+    /* Retry Single Question Button */
+    .btn-retry-q {
+      background: transparent;
+      border: 1px dashed var(--border-light);
+      color: var(--text-muted);
+      font-size: 0.78rem;
+      padding: 6px 12px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 38px;
+    }
+
+    .btn-retry-q:hover {
+      border-color: var(--accent-cyan);
+      color: var(--accent-cyan);
+    }
+
+    /* Full List View Mode */
+    .list-view-container .question-card {
+      margin-bottom: 28px;
+    }
+
+    /* Report Modal */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(4, 7, 13, 0.85);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 2000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      animation: fadeIn 0.2s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .modal-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-xl);
+      max-width: 650px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: clamp(20px, 4vw, 36px);
+      box-shadow: var(--shadow-lg);
+      position: relative;
+    }
+
+    .modal-close-btn {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      width: 44px;
+      height: 44px;
+      min-height: 44px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+
+    .modal-close-btn:hover {
+      background: var(--bg-surface-elevated);
+      color: var(--text-main);
+    }
+
+    .modal-header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .verdict-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 20px;
+      border-radius: 9999px;
+      font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+
+    .verdict-pass {
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--accent-emerald);
+      border: 2px solid var(--accent-emerald);
+      box-shadow: 0 0 20px var(--accent-emerald-glow);
+    }
+
+    .verdict-fail {
+      background: rgba(239, 68, 68, 0.15);
+      color: var(--accent-rose);
+      border: 2px solid var(--accent-rose);
+      box-shadow: 0 0 20px var(--accent-rose-glow);
+    }
+
+    .modal-header h2 {
+      font-size: clamp(1.2rem, 3vw, 1.5rem);
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .modal-header p {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .modal-score-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    @media (max-width: 520px) {
+      .modal-score-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .modal-score-box {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 14px;
+      text-align: center;
+    }
+
+    .modal-score-box .label {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 4px;
+    }
+
+    .modal-score-box .value {
+      font-family: var(--font-mono);
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .modal-breakdown {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      margin-bottom: 24px;
+    }
+
+    .modal-breakdown h3 {
+      font-size: 0.82rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+
+    .breakdown-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border-subtle);
+      font-size: 0.86rem;
+    }
+
+    .breakdown-row:last-child {
+      border-bottom: none;
+    }
+
+    .modal-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .modal-btn {
+      min-height: 48px;
+      padding: 12px 20px;
+      border-radius: var(--radius-md);
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+      touch-action: manipulation;
+    }
+
+    .modal-btn-primary {
+      background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+      color: #ffffff;
+      border: none;
+    }
+
+    .modal-btn-secondary {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-main);
+    }
+
+    .modal-btn-secondary:hover {
+      background: var(--bg-surface-elevated);
+      border-color: var(--border-light);
+    }
+
+    /* Print Styles */
+    @media print {
+      body {
+        background: #ffffff !important;
+        color: #000000 !important;
+      }
+      header, .top-progress-container, .filter-section, .question-nav-strip, .card-footer-nav, .modal-actions {
+        display: none !important;
+      }
+      .question-card {
+        border: 1px solid #ccc !important;
+        page-break-inside: avoid;
+        box-shadow: none !important;
+        background: #fff !important;
+        color: #000 !important;
+      }
+      .justification-box {
+        display: block !important;
+        background: #f8fafc !important;
+        color: #000 !important;
+        border-color: #06b6d4 !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Top Real-time Progress Bar -->
+  <div class="top-progress-container">
+    <div class="top-progress-bar" id="topProgressBar"></div>
+  </div>
+
+  <!-- Header Navigation -->
+  <header>
+    <div class="nav-container">
+      <a href="index.html" class="brand">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h1>
+            AUDIT-SIM // CLOUD & PRIVACY
+            <span class="brand-badge">ISO 27018</span>
+            <span class="brand-badge-cloud">ISO 29151</span>
+          </h1>
+          <p>Tema 11: Correspondencia con ISO/IEC 27018 e ISO/IEC 29151 (Anexo E de ISO/IEC 27701:2025)</p>
+        </div>
+      </a>
+
+      <div class="nav-actions">
+        <a href="index.html" class="topic-link-pill" title="Volver al Hub Central"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>Hub</a>
+        <a href="bloque1.html" class="topic-link-pill" title="Bloque 1">Bloque 1</a>
+        <a href="bloque2.html" class="topic-link-pill" title="Bloque 2">Bloque 2</a>
+        <a href="bloque3.html" class="topic-link-pill" title="Bloque 3">Bloque 3</a>
+        <a href="bloque4.html" class="topic-link-pill" title="Bloque 4">Bloque 4</a>
+        <a href="bloque5.html" class="topic-link-pill active" title="Bloque 5">Bloque 5</a>
+
+        <div class="view-toggle">
+          <button class="view-toggle-btn active" id="btnModeFocus" onclick="setViewMode('focus')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/></svg>
+            Modo Examen
+          </button>
+          <button class="view-toggle-btn" id="btnModeList" onclick="setViewMode('list')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+            Lista Completa
+          </button>
+        </div>
+
+        <!-- Timer -->
+        <div class="timer-pill" title="Tiempo transcurrido de examen">
+          <span class="dot"></span>
+          <span id="examTimer">00:00</span>
+        </div>
+
+        <!-- Sound FX toggle -->
+        <button class="btn-icon-toggle" id="btnSoundToggle" onclick="toggleSound()" title="Efectos de sonido (Activar/Desactivar)">
+          <svg id="soundIconOn" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+          </svg>
+          <svg id="soundIconOff" style="display:none;" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="1" y1="1" x2="23" y2="23"></line>
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <line x1="23" y1="9" x2="17" y2="15"></line>
+            <line x1="17" y1="9" x2="23" y2="15"></line>
+          </svg>
+        </button>
+
+        <!-- Final Report Button -->
+        <button class="btn-finish-exam" onclick="openReportModal()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          Dictamen Final
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- Dashboard Stats Ribbon -->
+    <section class="dashboard-header">
+      <div class="stats-ribbon">
+        <div class="stat-card stat-progress">
+          <span class="stat-label">Progreso <span id="progressPercent">0%</span></span>
+          <span class="stat-value" id="progressCount">0/12</span>
+        </div>
+        <div class="stat-card stat-correct">
+          <span class="stat-label">Conformes (Aciertos)</span>
+          <span class="stat-value" id="correctCount" style="color: var(--accent-emerald);">0</span>
+        </div>
+        <div class="stat-card stat-incorrect">
+          <span class="stat-label">No Conformes (Errores)</span>
+          <span class="stat-value" id="incorrectCount" style="color: var(--accent-rose);">0</span>
+        </div>
+        <div class="stat-card stat-score">
+          <span class="stat-label">Nota Vigesimal</span>
+          <span class="stat-value" id="vigesimalScore">00.0 <span class="stat-sub">/ 20</span></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Filter Buttons Bar - Touch friendly -->
+    <section class="filter-section">
+      <div class="filter-label-group">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+        <span>Filtros Normativos:</span>
+      </div>
+      <div class="filter-buttons" role="tablist">
+        <button class="filter-btn active" id="filterBtnAll" onclick="setFilter('all')">
+          Todos <span class="count-badge" id="countAll">12</span>
+        </button>
+        <button class="filter-btn" id="filterBtnTeoria" onclick="setFilter('Teoría y Mapeo Normativo')">
+          Teoría y Mapeo Normativo <span class="count-badge" id="countTeoria">6</span>
+        </button>
+        <button class="filter-btn" id="filterBtnCasos" onclick="setFilter('Casos Prácticos de Auditoría')">
+          Casos Prácticos de Auditoría <span class="count-badge" id="countCasos">6</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Quick Question Navigator Strip -->
+    <section class="question-nav-strip">
+      <div class="strip-header">
+        <span>Matriz Rápida de Preguntas</span>
+        <span id="navStripSubtitle">Navegación 1 a 12</span>
+      </div>
+      <div class="palette-grid" id="paletteGrid">
+        <!-- Rendered by JS -->
+      </div>
+    </section>
+
+    <!-- Exam Container -->
+    <section class="exam-container" id="examContainer">
+      <!-- Question cards injected here -->
+    </section>
+  </main>
+
+  <!-- Report Modal -->
+  <div class="modal-overlay" id="reportModal" onclick="if(event.target===this) closeReportModal()">
+    <div class="modal-card">
+      <button class="modal-close-btn" onclick="closeReportModal()" title="Cerrar">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+
+      <div class="modal-header">
+        <div id="modalVerdictBadge" class="verdict-badge verdict-pass">
+          CONFORME (APROBADO)
+        </div>
+        <h2>Dictamen de Evaluación de Auditoría</h2>
+        <p>Correspondencia ISO/IEC 27018 e ISO/IEC 29151 (Anexo E ISO/IEC 27701:2025)</p>
+      </div>
+
+      <div class="modal-score-grid">
+        <div class="modal-score-box">
+          <div class="label">Calificación Vigesimal</div>
+          <div class="value" id="modalVigesimal" style="color: var(--accent-cyan);">0.0 / 20</div>
+        </div>
+        <div class="modal-score-box">
+          <div class="label">Aprovechamiento</div>
+          <div class="value" id="modalPercentage">0%</div>
+        </div>
+        <div class="modal-score-box">
+          <div class="label">Resultado</div>
+          <div class="value" id="modalScoreFraction">0/12</div>
+        </div>
+      </div>
+
+      <div class="modal-breakdown">
+        <h3>Desglose por Dominio Normativo</h3>
+        <div class="breakdown-row">
+          <span>Teoría y Mapeo Normativo (Anexo E)</span>
+          <strong id="modalTeoriaScore" style="font-family: var(--font-mono);">0 / 6</strong>
+        </div>
+        <div class="breakdown-row">
+          <span>Casos Prácticos de Auditoría Cloud & PII</span>
+          <strong id="modalCasosScore" style="font-family: var(--font-mono);">0 / 6</strong>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="modal-btn modal-btn-primary" onclick="retryIncorrectOnly()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+          Reintentar Solo Preguntas Erróneas
+        </button>
+        <button class="modal-btn modal-btn-secondary" onclick="resetExam()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><polyline points="3 3 3 8 8 8"/></svg>
+          Reiniciar Examen Completo
+        </button>
+        <button class="modal-btn modal-btn-secondary" onclick="window.print()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          Imprimir / Exportar Dictamen
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /**
+     * BASE DE DATOS DE PREGUNTAS (TEMA 11: ANEXO E - ISO 27018 & ISO 29151)
+     * Incrustada exactamente como fue especificado por el usuario
+     */
+const questions = [
+  // --- SECCIÓN 1: TEORÍA Y MAPEO NORMATIVO ---
+  {
+    id: 1,
+    category: "Teoría y Mapeo Normativo",
+    question: "De acuerdo con el alcance definido en el Anexo E de la norma ISO/IEC 27701:2025, ¿cuál es la distinción fundamental entre el estándar ISO/IEC 27018 y el estándar ISO/IEC 29151?",
+    options: [
+      "A) ISO/IEC 27018 es una ley obligatoria en Sudamérica, mientras que ISO/IEC 29151 solo aplica a entidades públicas europeas.",
+      "B) ISO/IEC 27018 proporciona directrices para procesadores de PII (PII Processors) en nubes públicas, mientras que ISO/IEC 29151 es un código de prácticas con controles y orientación extendida principalmente para responsables (PII Controllers).",
+      "C) No existe diferencia; ambas normas fueron canceladas y reemplazadas de forma obligatoria por COBIT 2019.",
+      "D) ISO/IEC 29151 regula exclusivamente hardware físico de servidores, mientras que ISO/IEC 27018 regula redes cableadas."
+    ],
+    correct: 1, // B
+    justification: "Anexo E (Encabezado): 'ISO/IEC 27018 gives further information for organizations acting as PII processors and providing public cloud services. ISO/IEC 29151 gives additional controls and guidance for the processing of PII by PII controllers'."
+  },
+  {
+    id: 2,
+    category: "Teoría y Mapeo Normativo",
+    question: "Al revisar la Tabla E.1 de ISO/IEC 27701:2025, ¿por qué prácticamente todos los controles del bloque B.1 (Guía de implementación para PII Controllers) figuran como 'N/A' respecto a ISO/IEC 27018?",
+    options: [
+      "A) Porque el estándar ISO/IEC 27018 está orientado de forma específica y exclusiva a organizaciones que actúan como procesadores de PII en servicios de nube pública.",
+      "B) Porque ISO/IEC 27018 prohíbe el uso de controladores de datos en Internet.",
+      "C) Debido a un error de edición en la segunda edición de la norma.",
+      "D) Porque los controladores de PII solo deben certificarse bajo normas de calidad ISO 9001."
+    ],
+    correct: 0, // A
+    justification: "Tabla E.1 y alcance de ISO/IEC 27018: Al ser un código de práctica específico para PII Processors en nubes públicas, no contiene requisitos directos para las obligaciones exclusivas de un PII Controller (como recolección, consentimiento directo o atención de derechos de titulares)."
+  },
+  {
+    id: 3,
+    category: "Teoría y Mapeo Normativo",
+    question: "¿Qué advertencia formal explícita establece la introducción del Anexo E de la norma ISO/IEC 27701:2025 respecto al mapeo de la Tabla E.1?",
+    options: [
+      "A) Indica que cumplir un control de ISO 27018 certifica automáticamente el cumplimiento de ISO 27701 sin auditoría.",
+      "B) Establece que el mapeo es puramente indicativo y que un enlace entre disposiciones no significa en modo alguno que sean equivalentes.",
+      "C) Señala que la tabla tiene carácter vinculante y rango de ley para contratos internacionales.",
+      "D) Dictamina que los controles de ISO 29151 prevalecen sobre el Anexo A de ISO 27701."
+    ],
+    correct: 1, // B
+    justification: "Anexo E (Texto introductorio): 'The mapping shown in Table E.1 is purely indicative; a given link between these provisions does not mean they are equivalent'."
+  },
+  {
+    id: 4,
+    category: "Teoría y Mapeo Normativo",
+    question: "En la correspondencia de la Tabla E.1, ¿a qué control específico de ISO/IEC 27018 mapea la restricción de marketing y publicidad del procesador (control B.2.2.4 de ISO 27701)?",
+    options: [
+      "A) Al control A.3.2 de ISO/IEC 27018.",
+      "B) Al control A.10.3 de ISO/IEC 27018.",
+      "C) Al control A.5.1 de ISO/IEC 27018.",
+      "D) A la cláusula 4 de ISO/IEC 27018."
+    ],
+    correct: 0, // A
+    justification: "Tabla E.1: La fila correspondiente a B.2.2.4 (Marketing and advertising use) vincula de forma exacta con el control 'A.3.2' de ISO/IEC 27018."
+  },
+  {
+    id: 5,
+    category: "Teoría y Mapeo Normativo",
+    question: "Respecto a las cláusulas de requisitos de gestión (Cláusulas 4 a la 10) de ISO/IEC 27701:2025, ¿cuál es su correspondencia con ISO/IEC 27018 e ISO/IEC 29151 en la Tabla E.1?",
+    options: [
+      "A) Se corresponden punto por punto con los capítulos 4 al 10 de ambas normas.",
+      "B) Mapean como 'N/A' en su totalidad, debido a que ISO 27701 es un estándar de sistema de gestión (PIMS stand-alone), mientras que 27018 y 29151 son códigos de práctica y guías de control sin estructura de gestión de alto nivel.",
+      "C) Reemplazan automáticamente la política de seguridad del proveedor cloud.",
+      "D) Mapean únicamente a los requisitos de compras y finanzas corporativas."
+    ],
+    correct: 1, // B
+    justification: "Tabla E.1: Todas las cláusulas de gestión (4, 5, 6, 7, 8, 9 y 10) están catalogadas como 'N/A' frente a ISO/IEC 27018 e ISO/IEC 29151, ya que estas últimas son guías de buenas prácticas y controles, no normas de requisitos de sistemas de gestión (MSS)."
+  },
+  {
+    id: 6,
+    category: "Teoría y Mapeo Normativo",
+    question: "En la Tabla E.1, ¿a qué control de ISO/IEC 27018 mapea la directriz B.2.4.3 (Return, transfer or disposal of PII / Devolución, transferencia o eliminación de PII al finalizar el servicio)?",
+    options: [
+      "A) Control A.2.1 de ISO/IEC 27018.",
+      "B) Control A.10.3 de ISO/IEC 27018.",
+      "C) Control A.12.2 de ISO/IEC 27018.",
+      "D) Control A.8.1 de ISO/IEC 27018."
+    ],
+    correct: 1, // B
+    justification: "Tabla E.1: La fila de B.2.4.3 mapea formalmente al control 'A.10.3' de ISO/IEC 27018 (Return, transfer or disposal of PII in public cloud)."
+  },
+
+  // --- SECCIÓN 2: CASOS PRÁCTICOS DE AUDITORÍA ---
+  {
+    id: 7,
+    category: "Casos Prácticos de Auditoría",
+    question: "CASO 1: Un banco decide migrar todo su core financiero a un proveedor cloud público (IaaS/PaaS). Como auditor líder de sistemas, deseas verificar que el proveedor implemente directrices específicas para evitar que su personal acceda a los datos de los clientes sin autorización o los utilice con otros fines. ¿Qué estándar internacional de referencia solicitarías auditar específicamente al proveedor cloud?",
+    options: [
+      "A) ISO/IEC 27018 (Código de prácticas para protección de PII en nubes públicas como PII Processor).",
+      "B) ISO/IEC 29151 orientado exclusivamente a clínicas dentales locales.",
+      "C) Únicamente el manual de usuario del servidor web Apache.",
+      "D) La norma ISO 14001 de gestión medioambiental."
+    ],
+    correct: 0, // A
+    justification: "ISO/IEC 27018 es el estándar por excelencia diseñado específicamente para auditar las garantías de seguridad y privacidad que un proveedor de nube pública (PII Processor) brinda a sus clientes respecto a la PII almacenada."
+  },
+  {
+    id: 8,
+    category: "Casos Prácticos de Auditoría",
+    question: "CASO 2: Una empresa de desarrollo SaaS (PII Processor en la nube) recibe un requerimiento judicial de un tribunal civil solicitando la entrega de correos de un cliente. El proveedor entrega la información inmediatamente sin avisar al cliente, alegando que 'la orden judicial exime de avisar'. Al contrastar con B.2.5.5 de ISO 27701 y el control A.6.1 de ISO/IEC 27018, ¿qué dictamen emite el auditor?",
+    options: [
+      "A) Conforme: El procesador no tiene que avisar jamás a sus clientes sobre órdenes judiciales.",
+      "B) No Conforme: Salvo que la ley procesal penal prohíba expresamente la notificación para preservar la investigación, el procesador debe notificar oportunamente al cliente sobre cualquier solicitud legalmente vinculante de divulgación de PII.",
+      "C) Conforme, siempre que se haya cobrado una tarifa administrativa al tribunal.",
+      "D) No Conforme únicamente si los datos estaban cifrados con claves RSA."
+    ],
+    correct: 1, // B
+    justification: "Control B.2.5.5 / ISO 27018 control A.6.1: El encargado de tratamiento en la nube debe notificar al cliente sobre solicitudes vinculantes de revelación de PII, a menos que exista una prohibición legal expresa (ej. secreto de sumario penal)."
+  },
+  {
+    id: 9,
+    category: "Casos Prácticos de Auditoría",
+    question: "CASO 3: Una aseguradora (PII Controller) recopila información médica sensible de sus asegurados y busca una guía exhaustiva de controles para proteger dicha PII durante todo el ciclo de vida (recolección, almacenamiento, acceso y borrado). Al comparar ISO/IEC 27018 frente a ISO/IEC 29151, ¿cuál es la norma adecuada para guiar su implementación y por qué?",
+    options: [
+      "A) ISO/IEC 27018, porque cualquier servidor conectado a Internet califica automáticamente como nube pública.",
+      "B) ISO/IEC 29151, porque es el código de práctica diseñado para que los responsables (PII Controllers) implementen controles de protección de PII en cualquier tipo de organización y arquitectura.",
+      "C) Ninguna de las dos, ya que las aseguradoras solo pueden utilizar la norma ISO 9001.",
+      "D) ISO/IEC 27018, porque la norma 29151 está prohibida para datos biométricos o de salud."
+    ],
+    correct: 1, // B
+    justification: "ISO/IEC 29151 proporciona un código de práctica amplio enfocado en PII Controllers con controles de ciclo de vida (mapeados en la columna ISO/IEC 29151 del Anexo E), a diferencia de 27018 que se limita a proveedores cloud processors."
+  },
+  {
+    id: 10,
+    category: "Casos Prácticos de Auditoría",
+    question: "CASO 4: Un proveedor cloud de almacenamiento de archivos anuncia en su contrato que 'los clientes conservan la propiedad de sus archivos, pero al cancelar la suscripción, los archivos permanecerán archivados en cinta durante 5 años para seguridad del proveedor'. Al auditar bajo B.2.4.3 de ISO 27701 y A.10.3 de ISO 27018, ¿qué hallazgo se reporta?",
+    options: [
+      "A) No Conformidad: El procesador en la nube debe asegurar la capacidad de devolver, transferir o destruir de forma segura y completa la PII una vez culminado el contrato o servicio según las instrucciones del cliente, sin retenciones indebidas no pactadas.",
+      "B) Conformidad plena, pues archivar datos ajenos durante 5 años es una práctica de buena fe.",
+      "C) Observación subsanable únicamente si el cliente paga almacenamiento extra.",
+      "D) No Conformidad imputable exclusivamente a la empresa de telecomunicaciones."
+    ],
+    correct: 0, // A
+    justification: "Control B.2.4.3 y control A.10.3 de ISO 27018: Al terminar el servicio, el procesador debe garantizar la devolución o destrucción definitiva de los datos de los clientes y sus copias de respaldo, evitando la retención arbitraria."
+  },
+  {
+    id: 11,
+    category: "Casos Prácticos de Auditoría",
+    question: "CASO 5: Durante una auditoría a una empresa SaaS de CRM, el auditor verifica que los datos en tránsito entre el cliente web y los microservicios en la nube viajan sin cifrado TLS en conexiones HTTP internas. El proveedor alega que 'dentro de la VPC de la nube no hace falta cifrado'. Al verificar B.2.4.4 de ISO 27701 y el control A.12.2 de ISO/IEC 27018, ¿cuál es la determinación técnica?",
+    options: [
+      "A) Conforme: Las nubes públicas son 100% impenetrables y no requieren cifrado en tránsito interno.",
+      "B) No Conforme: Se deben aplicar controles adecuados de transmisión de datos (incluyendo cifrado robusto y autenticación de extremos) para garantizar que la PII no sea interceptada ni comprometida durante su tránsito por redes de transmisión.",
+      "C) Desviación menor que se resuelve reiniciando el router virtual.",
+      "D) Conforme siempre que el personal del proveedor haya firmado un acuerdo NDA."
+    ],
+    correct: 1, // B
+    justification: "Control B.2.4.4 de ISO 27701 y control A.12.2 de ISO/IEC 27018: Exigen que la transmisión de PII a través de redes de comunicación esté sujeta a controles estrictos (como cifrado fuerte) que aseguren su integridad, confidencialidad y destino correcto."
+  },
+  {
+    id: 12,
+    category: "Casos Prácticos de Auditoría",
+    question: "CASO 6: Una organización que obtuvo la certificación ISO/IEC 27018 en 2024 afirma en su portal institucional que 'su certificación ISO 27018 equivale automáticamente a estar certificada en ISO/IEC 27701:2025'. Como auditor de certificación, ¿cómo calificas esta afirmación?",
+    options: [
+      "A) Totalmente correcta, ya que el Anexo E fusiona ambas normas en un solo certificado comercial.",
+      "B) Incorrecta y engañosa: ISO/IEC 27018 es un código de prácticas complementario enfocado en controles para cloud processors, mientras que ISO/IEC 27701:2025 es un sistema de gestión auditable (PIMS stand-alone) que exige cumplir cláusulas de gestión (4 a 10) y controles organizacionales integrales.",
+      "C) Correcta únicamente si la empresa no maneja datos de menores de edad.",
+      "D) Correcta solo si la entidad reguladora de telecomunicaciones emitió una resolución de homologación."
+    ],
+    correct: 1, // B
+    justification: "ISO/IEC 27701:2025 (Edición 2) es un estándar independiente de sistema de gestión (PIMS). Tal como aclara el Anexo E, las correspondencias con ISO/IEC 27018 son puramente informativas y de buenas prácticas de control; no confieren equivalencia ni certificación automática de sistema de gestión."
+  }
+];
+
+    // Application State
+    const state = {
+      viewMode: "focus", // "focus" | "list"
+      activeFilter: "all",
+      currentFocusIndex: 0,
+      userAnswers: {}, // { [questionId]: { selectedOption: number, isCorrect: boolean } }
+      timerSeconds: 0,
+      timerInterval: null,
+      soundEnabled: true
+    };
+
+    // Web Audio Synthesizer (Zero-latency, no external files)
+    let audioCtx = null;
+    function getAudioContext() {
+      if (!audioCtx) {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (AudioContextClass) {
+          audioCtx = new AudioContextClass();
+        }
+      }
+      if (audioCtx && audioCtx.state === "suspended") {
+        audioCtx.resume();
+      }
+      return audioCtx;
+    }
+
+    function playSound(type) {
+      if (!state.soundEnabled) return;
+      try {
+        const ctx = getAudioContext();
+        if (!ctx) return;
+        const now = ctx.currentTime;
+
+        if (type === "correct") {
+          // Double chime (Success chord)
+          const osc1 = ctx.createOscillator();
+          const osc2 = ctx.createOscillator();
+          const gain = ctx.createGain();
+
+          osc1.type = "sine";
+          osc2.type = "sine";
+          osc1.frequency.setValueAtTime(587.33, now); // D5
+          osc1.frequency.exponentialRampToValueAtTime(880, now + 0.18); // A5
+          osc2.frequency.setValueAtTime(880, now);
+          osc2.frequency.exponentialRampToValueAtTime(1174.66, now + 0.22); // D6
+
+          gain.gain.setValueAtTime(0.18, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+
+          osc1.connect(gain);
+          osc2.connect(gain);
+          gain.connect(ctx.destination);
+
+          osc1.start(now);
+          osc2.start(now);
+          osc1.stop(now + 0.26);
+          osc2.stop(now + 0.26);
+        } else if (type === "incorrect") {
+          // Low dissonance buzz
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+
+          osc.type = "sawtooth";
+          osc.frequency.setValueAtTime(160, now);
+          osc.frequency.linearRampToValueAtTime(110, now + 0.22);
+
+          gain.gain.setValueAtTime(0.2, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.24);
+
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+
+          osc.start(now);
+          osc.stop(now + 0.25);
+        } else if (type === "complete") {
+          // Fanfare arpeggio
+          [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            const start = now + (i * 0.08);
+
+            osc.type = "triangle";
+            osc.frequency.setValueAtTime(freq, start);
+
+            gain.gain.setValueAtTime(0.15, start);
+            gain.gain.exponentialRampToValueAtTime(0.001, start + 0.35);
+
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+
+            osc.start(start);
+            osc.stop(start + 0.36);
+          });
+        }
+      } catch (e) {
+        // Audio synthesis fallback silently
+      }
+    }
+
+    function toggleSound() {
+      state.soundEnabled = !state.soundEnabled;
+      const onIcon = document.getElementById("soundIconOn");
+      const offIcon = document.getElementById("soundIconOff");
+      if (state.soundEnabled) {
+        onIcon.style.display = "block";
+        offIcon.style.display = "none";
+        playSound("correct");
+      } else {
+        onIcon.style.display = "none";
+        offIcon.style.display = "block";
+      }
+    }
+
+    // Timer Implementation
+    function startTimer() {
+      if (state.timerInterval) clearInterval(state.timerInterval);
+      state.timerInterval = setInterval(() => {
+        state.timerSeconds++;
+        const mins = String(Math.floor(state.timerSeconds / 60)).padStart(2, "0");
+        const secs = String(state.timerSeconds % 60).padStart(2, "0");
+        const el = document.getElementById("examTimer");
+        if (el) el.textContent = `${mins}:${secs}`;
+      }, 1000);
+    }
+
+    // Question Filtering Helpers
+    function getFilteredQuestions() {
+      if (state.activeFilter === "all") return questions;
+      return questions.filter(q => q.category === state.activeFilter);
+    }
+
+    // Calculate Statistics
+    function calculateStats() {
+      const answeredKeys = Object.keys(state.userAnswers);
+      const totalAnswered = answeredKeys.length;
+      let correct = 0;
+      let incorrect = 0;
+
+      answeredKeys.forEach(id => {
+        if (state.userAnswers[id].isCorrect) correct++;
+        else incorrect++;
+      });
+
+      const totalQuestions = questions.length;
+      const progressPercent = Math.round((totalAnswered / totalQuestions) * 100);
+      const vigesimal = totalQuestions > 0 ? ((correct / totalQuestions) * 20).toFixed(1) : "00.0";
+      const scorePercent = totalQuestions > 0 ? Math.round((correct / totalQuestions) * 100) : 0;
+
+      return {
+        totalQuestions,
+        totalAnswered,
+        correct,
+        incorrect,
+        progressPercent,
+        vigesimal,
+        scorePercent
+      };
+    }
+
+    // Update Dashboard Metrics in Real Time
+    function updateMetricsUI() {
+      const stats = calculateStats();
+
+      // Top progress bar
+      const topBar = document.getElementById("topProgressBar");
+      if (topBar) topBar.style.width = `${stats.progressPercent}%`;
+
+      // Stat cards
+      document.getElementById("progressPercent").textContent = `${stats.progressPercent}%`;
+      document.getElementById("progressCount").textContent = `${stats.totalAnswered}/${stats.totalQuestions}`;
+      document.getElementById("correctCount").textContent = stats.correct;
+      document.getElementById("incorrectCount").textContent = stats.incorrect;
+      document.getElementById("vigesimalScore").innerHTML = `${stats.vigesimal} <span class="stat-sub">/ 20</span>`;
+
+      // Filter badges
+      const countTeoria = questions.filter(q => q.category === "Teoría y Mapeo Normativo").length;
+      const countCasos = questions.filter(q => q.category === "Casos Prácticos de Auditoría").length;
+      document.getElementById("countAll").textContent = questions.length;
+      document.getElementById("countTeoria").textContent = countTeoria;
+      document.getElementById("countCasos").textContent = countCasos;
+
+      renderNavigationGrid();
+    }
+
+    // Render Quick Navigation Grid (1 to 12 palette)
+    function renderNavigationGrid() {
+      const palette = document.getElementById("paletteGrid");
+      if (!palette) return;
+      palette.innerHTML = "";
+
+      const currentList = getFilteredQuestions();
+      const currentActiveQuestion = currentList[state.currentFocusIndex];
+
+      questions.forEach((q, idx) => {
+        const btn = document.createElement("button");
+        btn.className = "palette-btn";
+        btn.textContent = q.id;
+        btn.title = `Pregunta ${q.id}: ${q.category}`;
+
+        const ans = state.userAnswers[q.id];
+        if (ans) {
+          if (ans.isCorrect) btn.classList.add("correct");
+          else btn.classList.add("incorrect");
+        }
+
+        if (state.viewMode === "focus" && currentActiveQuestion && currentActiveQuestion.id === q.id) {
+          btn.classList.add("current");
+        }
+
+        btn.onclick = () => {
+          if (state.viewMode === "focus") {
+            // Find index in current filtered list or switch filter
+            const targetFilterIndex = currentList.findIndex(item => item.id === q.id);
+            if (targetFilterIndex !== -1) {
+              state.currentFocusIndex = targetFilterIndex;
+              renderFocusMode();
+            } else {
+              setFilter("all");
+              const fullIndex = questions.findIndex(item => item.id === q.id);
+              state.currentFocusIndex = fullIndex;
+              renderFocusMode();
+            }
+          } else {
+            // In list mode, scroll smoothly to the element
+            const cardEl = document.getElementById(`q-card-${q.id}`);
+            if (cardEl) {
+              cardEl.scrollIntoView({ behavior: "smooth", block: "center" });
+              cardEl.style.borderColor = "var(--accent-cyan)";
+              setTimeout(() => { cardEl.style.borderColor = ""; }, 1400);
+            } else {
+              setFilter("all");
+              setTimeout(() => {
+                const retryEl = document.getElementById(`q-card-${q.id}`);
+                if (retryEl) retryEl.scrollIntoView({ behavior: "smooth", block: "center" });
+              }, 50);
+            }
+          }
+        };
+
+        palette.appendChild(btn);
+      });
+    }
+
+    // Handle Option Selection
+    function handleSelectOption(questionId, selectedIndex) {
+      const q = questions.find(item => item.id === questionId);
+      if (!q) return;
+
+      // Prevent re-selection if already answered
+      if (state.userAnswers[questionId]) return;
+
+      const isCorrect = (selectedIndex === q.correct);
+      state.userAnswers[questionId] = {
+        selectedOption: selectedIndex,
+        isCorrect
+      };
+
+      // Play synthesized audio feedback
+      if (isCorrect) {
+        playSound("correct");
+      } else {
+        playSound("incorrect");
+      }
+
+      // Update UI
+      updateMetricsUI();
+
+      if (state.viewMode === "focus") {
+        renderFocusMode();
+      } else {
+        // Re-render only that card in list view
+        const cardEl = document.getElementById(`q-card-${questionId}`);
+        if (cardEl) {
+          const tempContainer = document.createElement("div");
+          tempContainer.innerHTML = buildQuestionHTML(q, false);
+          cardEl.replaceWith(tempContainer.firstElementChild);
+        }
+      }
+
+      // Check if all questions are answered
+      if (Object.keys(state.userAnswers).length === questions.length) {
+        setTimeout(() => {
+          playSound("complete");
+          openReportModal();
+        }, 600);
+      }
+    }
+
+    // Build Question HTML Template
+    function buildQuestionHTML(q, isFocusMode = false, currentNum = 1, totalNum = 1) {
+      const ans = state.userAnswers[q.id];
+      const hasAnswered = !!ans;
+      const isTeoria = q.category === "Teoría y Mapeo Normativo";
+      const categoryBadgeClass = isTeoria ? "badge-teoria" : "badge-casos";
+      const iconSvg = isTeoria 
+        ? `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>`
+        : `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>`;
+
+      let optionsHTML = "";
+      const letters = ["A", "B", "C", "D"];
+
+      q.options.forEach((optText, optIndex) => {
+        let btnClasses = "option-btn";
+        let statusIconHTML = "";
+
+        if (hasAnswered) {
+          if (optIndex === q.correct) {
+            if (ans.selectedOption === optIndex) {
+              btnClasses += " selected-correct";
+            } else {
+              btnClasses += " reveal-correct";
+            }
+            statusIconHTML = `
+              <span class="option-status-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              </span>
+            `;
+          } else if (ans.selectedOption === optIndex) {
+            btnClasses += " selected-incorrect";
+            statusIconHTML = `
+              <span class="option-status-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </span>
+            `;
+          }
+        }
+
+        // Clean option text removing existing A), B), C), D) prefixes if present
+        const cleanText = optText.replace(/^[A-D]\)\s*/, "");
+
+        optionsHTML += `
+          <button 
+            type="button" 
+            class="${btnClasses}" 
+            onclick="handleSelectOption(${q.id}, ${optIndex})"
+            ${hasAnswered ? "disabled" : ""}
+            aria-label="Opción ${letters[optIndex]}"
+          >
+            <div class="option-letter">${letters[optIndex]}</div>
+            <div class="option-content">${cleanText}</div>
+            ${statusIconHTML}
+          </button>
+        `;
+      });
+
+      // Justification Box (Only visible if answered)
+      let justificationHTML = "";
+      if (hasAnswered) {
+        justificationHTML = `
+          <div class="justification-box" style="display: block;">
+            <div class="justification-header">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              <span>Justificación Auditora y Cita Normativa</span>
+            </div>
+            <div class="justification-badges">
+              <span class="just-badge just-badge-27018">ISO/IEC 27018 (Cloud PII)</span>
+              <span class="just-badge just-badge-29151">ISO/IEC 29151 (PII Protection)</span>
+              <span class="just-badge">Tabla E.1 (ISO/IEC 27701:2025)</span>
+            </div>
+            <div class="justification-text">
+              ${q.justification}
+            </div>
+          </div>
+        `;
+      }
+
+      // Focus Mode Navigation Footer
+      let footerNavHTML = "";
+      if (isFocusMode) {
+        const hasPrev = state.currentFocusIndex > 0;
+        const hasNext = state.currentFocusIndex < totalNum - 1;
+
+        footerNavHTML = `
+          <div class="card-footer-nav">
+            <button class="nav-btn" onclick="navigateQuestion(-1)" ${!hasPrev ? "disabled" : ""}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+              Anterior
+            </button>
+
+            <div style="display: flex; gap: 8px; align-items: center;">
+              ${hasAnswered ? `
+                <button class="btn-retry-q" onclick="retryQuestion(${q.id})" title="Reiniciar solo esta pregunta">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><polyline points="3 3 3 8 8 8"/></svg>
+                  Reintentar
+                </button>
+              ` : ""}
+            </div>
+
+            <button class="nav-btn nav-btn-primary" onclick="navigateQuestion(1)" ${!hasNext ? "disabled" : ""}>
+              Siguiente
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+          </div>
+        `;
+      }
+
+      return `
+        <article class="question-card" id="q-card-${q.id}">
+          <div class="question-card-header">
+            <div class="question-number-tag">
+              <span>PREGUNTA #${q.id}</span>
+              ${isFocusMode ? `<span style="color: var(--text-dark);">(${currentNum} de ${totalNum})</span>` : ""}
+            </div>
+            <span class="question-badge ${categoryBadgeClass}">
+              ${iconSvg}
+              ${q.category}
+            </span>
+          </div>
+
+          <div class="question-text">
+            ${q.question}
+          </div>
+
+          <div class="options-grid">
+            ${optionsHTML}
+          </div>
+
+          ${justificationHTML}
+          ${footerNavHTML}
+        </article>
+      `;
+    }
+
+    // Render Focus Mode (Single question display)
+    function renderFocusMode() {
+      const container = document.getElementById("examContainer");
+      if (!container) return;
+      container.className = "exam-container";
+
+      const filtered = getFilteredQuestions();
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="question-card" style="text-align: center; padding: 40px;">
+            <p style="color: var(--text-muted);">No hay preguntas en esta categoría.</p>
+          </div>
+        `;
+        return;
+      }
+
+      if (state.currentFocusIndex >= filtered.length) {
+        state.currentFocusIndex = 0;
+      }
+
+      const q = filtered[state.currentFocusIndex];
+      container.innerHTML = buildQuestionHTML(q, true, state.currentFocusIndex + 1, filtered.length);
+      renderNavigationGrid();
+    }
+
+    // Render List View (All questions displayed)
+    function renderListView() {
+      const container = document.getElementById("examContainer");
+      if (!container) return;
+      container.className = "exam-container list-view-container";
+
+      const filtered = getFilteredQuestions();
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="question-card" style="text-align: center; padding: 40px;">
+            <p style="color: var(--text-muted);">No hay preguntas en esta categoría.</p>
+          </div>
+        `;
+        return;
+      }
+
+      let fullHTML = "";
+      filtered.forEach((q, idx) => {
+        fullHTML += buildQuestionHTML(q, false, idx + 1, filtered.length);
+      });
+
+      container.innerHTML = fullHTML;
+      renderNavigationGrid();
+    }
+
+    // Question Navigation in Focus Mode
+    function navigateQuestion(direction) {
+      const filtered = getFilteredQuestions();
+      const newIndex = state.currentFocusIndex + direction;
+      if (newIndex >= 0 && newIndex < filtered.length) {
+        state.currentFocusIndex = newIndex;
+        renderFocusMode();
+        window.scrollTo({ top: 120, behavior: "smooth" });
+      }
+    }
+
+    // View Mode Switcher
+    function setViewMode(mode) {
+      state.viewMode = mode;
+      const btnFocus = document.getElementById("btnModeFocus");
+      const btnList = document.getElementById("btnModeList");
+
+      if (mode === "focus") {
+        btnFocus.classList.add("active");
+        btnList.classList.remove("active");
+        renderFocusMode();
+      } else {
+        btnFocus.classList.remove("active");
+        btnList.classList.add("active");
+        renderListView();
+      }
+    }
+
+    // Set Active Filter
+    function setFilter(category) {
+      state.activeFilter = category;
+      state.currentFocusIndex = 0;
+
+      const btnAll = document.getElementById("filterBtnAll");
+      const btnTeoria = document.getElementById("filterBtnTeoria");
+      const btnCasos = document.getElementById("filterBtnCasos");
+
+      btnAll.classList.toggle("active", category === "all");
+      btnTeoria.classList.toggle("active", category === "Teoría y Mapeo Normativo");
+      btnCasos.classList.toggle("active", category === "Casos Prácticos de Auditoría");
+
+      if (state.viewMode === "focus") {
+        renderFocusMode();
+      } else {
+        renderListView();
+      }
+    }
+
+    // Retry a single question
+    function retryQuestion(questionId) {
+      if (state.userAnswers[questionId]) {
+        delete state.userAnswers[questionId];
+        updateMetricsUI();
+        if (state.viewMode === "focus") {
+          renderFocusMode();
+        } else {
+          renderListView();
+        }
+      }
+    }
+
+    // Retry only incorrect questions
+    function retryIncorrectOnly() {
+      Object.keys(state.userAnswers).forEach(id => {
+        if (!state.userAnswers[id].isCorrect) {
+          delete state.userAnswers[id];
+        }
+      });
+      closeReportModal();
+      updateMetricsUI();
+      state.currentFocusIndex = 0;
+      if (state.viewMode === "focus") {
+        renderFocusMode();
+      } else {
+        renderListView();
+      }
+    }
+
+    // Complete Reset
+    function resetExam() {
+      if (confirm("¿Estás seguro de que deseas reiniciar todo el examen? Se borrarán todas las respuestas.")) {
+        state.userAnswers = {};
+        state.currentFocusIndex = 0;
+        state.timerSeconds = 0;
+        closeReportModal();
+        updateMetricsUI();
+        if (state.viewMode === "focus") {
+          renderFocusMode();
+        } else {
+          renderListView();
+        }
+      }
+    }
+
+    // Modal Control & Report Generation
+    function openReportModal() {
+      const stats = calculateStats();
+      const modal = document.getElementById("reportModal");
+      const verdictBadge = document.getElementById("modalVerdictBadge");
+
+      // Evaluation threshold: 70% or 14/20
+      const isApproved = parseFloat(stats.vigesimal) >= 14.0;
+
+      if (isApproved) {
+        verdictBadge.className = "verdict-badge verdict-pass";
+        verdictBadge.innerHTML = `
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          DICTAMEN: CONFORME (APROBADO)
+        `;
+      } else {
+        verdictBadge.className = "verdict-badge verdict-fail";
+        verdictBadge.innerHTML = `
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          DICTAMEN: NO CONFORME (DESAPROBADO)
+        `;
+      }
+
+      document.getElementById("modalVigesimal").textContent = `${stats.vigesimal} / 20`;
+      document.getElementById("modalPercentage").textContent = `${stats.scorePercent}%`;
+      document.getElementById("modalScoreFraction").textContent = `${stats.correct} / ${stats.totalQuestions}`;
+
+      // Domain breakdown
+      let teoriaCorrect = 0;
+      let casosCorrect = 0;
+      const countTeoria = questions.filter(q => q.category === "Teoría y Mapeo Normativo").length;
+      const countCasos = questions.filter(q => q.category === "Casos Prácticos de Auditoría").length;
+
+      questions.forEach(q => {
+        const ans = state.userAnswers[q.id];
+        if (ans && ans.isCorrect) {
+          if (q.category === "Teoría y Mapeo Normativo") teoriaCorrect++;
+          else if (q.category === "Casos Prácticos de Auditoría") casosCorrect++;
+        }
+      });
+
+      document.getElementById("modalTeoriaScore").textContent = `${teoriaCorrect} / ${countTeoria}`;
+      document.getElementById("modalCasosScore").textContent = `${casosCorrect} / ${countCasos}`;
+
+      modal.style.display = "flex";
+      document.body.style.overflow = "hidden";
+    }
+
+    function closeReportModal() {
+      const modal = document.getElementById("reportModal");
+      if (modal) modal.style.display = "none";
+      document.body.style.overflow = "auto";
+    }
+
+    // Keyboard Shortcuts
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        closeReportModal();
+      }
+      if (state.viewMode === "focus") {
+        if (e.key === "ArrowLeft") navigateQuestion(-1);
+        if (e.key === "ArrowRight") navigateQuestion(1);
+        const keyMap = { "1": 0, "a": 0, "A": 0, "2": 1, "b": 1, "B": 1, "3": 2, "c": 2, "C": 2, "4": 3, "d": 3, "D": 3 };
+        if (keyMap.hasOwnProperty(e.key)) {
+          const filtered = getFilteredQuestions();
+          const currentQ = filtered[state.currentFocusIndex];
+          if (currentQ && !state.userAnswers[currentQ.id]) {
+            handleSelectOption(currentQ.id, keyMap[e.key]);
+          }
+        }
+      }
+    });
+
+    // Initialize application
+    window.addEventListener("DOMContentLoaded", () => {
+      startTimer();
+      updateMetricsUI();
+      renderFocusMode();
+    });
+  </script>
+</body>
+</html>

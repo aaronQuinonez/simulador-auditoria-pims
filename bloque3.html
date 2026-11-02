@@ -1,0 +1,2281 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simulador de Examen Parcial - Tema 09: ISO/IEC 29100 y Anexo C ISO/IEC 27701:2025 | Auditoría de Sistemas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-main: #0a0e1a;
+      --bg-card: #111828;
+      --bg-card-hover: #172338;
+      --bg-surface: #1e293d;
+      --bg-surface-elevated: #283750;
+      
+      --border-subtle: #1e2940;
+      --border-light: #334155;
+      --border-accent: #8b5cf6;
+
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dark: #64748b;
+
+      --accent-cyan: #06b6d4;
+      --accent-blue: #3b82f6;
+      --accent-purple: #8b5cf6;
+      --accent-purple-glow: rgba(139, 92, 246, 0.25);
+      --accent-emerald: #10b981;
+      --accent-emerald-glow: rgba(16, 185, 129, 0.25);
+      --accent-rose: #f43f5e;
+      --accent-rose-glow: rgba(244, 63, 94, 0.25);
+      --accent-amber: #f59e0b;
+
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-xl: 20px;
+
+      --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
+      --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+      --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.5);
+
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'Fira Code', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+      line-height: 1.5;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-image: 
+        radial-gradient(circle at 15% 15%, rgba(139, 92, 246, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 85% 85%, rgba(6, 182, 212, 0.08) 0%, transparent 40%),
+        linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+      background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px;
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    /* Top Navigation Bar */
+    header {
+      background: rgba(17, 24, 40, 0.9);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border-subtle);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      padding: 12px 24px;
+    }
+
+    .nav-container {
+      max-width: 1300px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: var(--radius-md);
+      background: linear-gradient(135deg, #8b5cf6, #06b6d4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 15px rgba(139, 92, 246, 0.4);
+      flex-shrink: 0;
+    }
+
+    .brand-icon svg {
+      width: 24px;
+      height: 24px;
+      color: #fff;
+    }
+
+    .brand-text h1 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .brand-badge {
+      background: rgba(139, 92, 246, 0.15);
+      color: #c084fc;
+      font-size: 0.65rem;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 4px;
+      border: 1px solid rgba(139, 92, 246, 0.3);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .brand-text p {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .topic-link-pill {
+      color: var(--accent-cyan);
+      text-decoration: none;
+      font-size: 0.75rem;
+      border: 1px solid rgba(6, 182, 212, 0.3);
+      padding: 5px 12px;
+      border-radius: 20px;
+      background: rgba(6, 182, 212, 0.1);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .topic-link-pill:hover {
+      background: rgba(6, 182, 212, 0.2);
+      border-color: var(--accent-cyan);
+    }
+
+    .view-toggle {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-light);
+      border-radius: 30px;
+      padding: 3px;
+      display: flex;
+      gap: 2px;
+    }
+
+    .view-toggle-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 20px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .view-toggle-btn.active {
+      background: var(--accent-purple);
+      color: #fff;
+      font-weight: 700;
+      box-shadow: 0 2px 8px rgba(139, 92, 246, 0.35);
+    }
+
+    .btn-icon-toggle {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-light);
+      color: var(--text-muted);
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-icon-toggle:hover {
+      background: var(--bg-surface-elevated);
+      color: var(--text-main);
+      border-color: var(--accent-cyan);
+    }
+
+    .timer-pill {
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid var(--border-light);
+      border-radius: 20px;
+      padding: 6px 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--accent-cyan);
+      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5);
+    }
+
+    .timer-pill .dot {
+      width: 8px;
+      height: 8px;
+      background: var(--accent-cyan);
+      border-radius: 50%;
+      animation: pulse 2s infinite ease-in-out;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.3; transform: scale(0.85); }
+    }
+
+    /* Main Container */
+    main {
+      max-width: 1300px;
+      margin: 0 auto;
+      padding: 24px;
+      flex: 1;
+      width: 100%;
+    }
+
+    /* Dashboard Metrics & Filters */
+    .dashboard-header {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 20px;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+
+    @media (max-width: 900px) {
+      .dashboard-header {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Stats Ribbon */
+    .stats-ribbon {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+
+    @media (max-width: 768px) {
+      .stats-ribbon {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    .stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 12px 16px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.2s ease, transform 0.2s ease;
+    }
+
+    .stat-card::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 3px;
+      height: 100%;
+      background: var(--card-accent, var(--border-light));
+    }
+
+    .stat-card.stat-progress { --card-accent: var(--accent-cyan); }
+    .stat-card.stat-correct { --card-accent: var(--accent-emerald); }
+    .stat-card.stat-incorrect { --card-accent: var(--accent-rose); }
+    .stat-card.stat-score { --card-accent: var(--accent-purple); }
+
+    .stat-card:hover {
+      border-color: var(--border-light);
+      transform: translateY(-1px);
+    }
+
+    .stat-label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .stat-value {
+      font-size: 1.4rem;
+      font-weight: 700;
+      margin-top: 4px;
+      font-family: var(--font-mono);
+      display: flex;
+      align-items: baseline;
+      gap: 4px;
+    }
+
+    .stat-value small {
+      font-size: 0.75rem;
+      color: var(--text-dark);
+      font-family: var(--font-sans);
+    }
+
+    /* Overall Progress Bar */
+    .progress-bar-container {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 14px 18px;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .progress-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      font-size: 0.8rem;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .progress-meta {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      color: var(--text-muted);
+      flex-wrap: wrap;
+    }
+
+    .progress-track {
+      height: 8px;
+      background: var(--bg-surface);
+      border-radius: 4px;
+      overflow: hidden;
+      display: flex;
+      position: relative;
+    }
+
+    .progress-segment-correct {
+      height: 100%;
+      background: var(--accent-emerald);
+      transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .progress-segment-incorrect {
+      height: 100%;
+      background: var(--accent-rose);
+      transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Filter Toolbar */
+    .filter-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      background: rgba(17, 24, 40, 0.6);
+      padding: 8px 12px;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .filter-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .filter-btn {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-muted);
+      font-size: 0.82rem;
+      font-weight: 600;
+      padding: 6px 14px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .filter-btn:hover {
+      background: var(--bg-surface);
+      color: var(--text-main);
+    }
+
+    .filter-btn.active {
+      background: var(--bg-surface);
+      border-color: var(--accent-purple);
+      color: var(--text-main);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+    }
+
+    .filter-count {
+      background: rgba(255, 255, 255, 0.08);
+      font-size: 0.7rem;
+      font-family: var(--font-mono);
+      padding: 1px 6px;
+      border-radius: 10px;
+    }
+
+    .filter-btn.active .filter-count {
+      background: var(--accent-purple);
+      color: #fff;
+      font-weight: 700;
+    }
+
+    .filter-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .btn-action-outline {
+      background: transparent;
+      border: 1px solid var(--border-light);
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      font-weight: 500;
+      padding: 6px 14px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .btn-action-outline:hover {
+      background: var(--bg-surface);
+      color: var(--text-main);
+      border-color: var(--text-muted);
+    }
+
+    .btn-action-outline.btn-amber {
+      border-color: rgba(245, 158, 11, 0.3);
+      color: var(--accent-amber);
+    }
+
+    .btn-action-outline.btn-amber:hover {
+      background: rgba(245, 158, 11, 0.1);
+      border-color: var(--accent-amber);
+    }
+
+    /* Content Layout */
+    .exam-layout {
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      gap: 24px;
+      align-items: start;
+    }
+
+    @media (max-width: 1024px) {
+      .exam-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Question Card Styling */
+    .question-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-xl);
+      padding: 28px;
+      box-shadow: var(--shadow-lg);
+      position: relative;
+      transition: border-color 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .question-card:hover {
+      border-color: var(--border-light);
+    }
+
+    .question-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .question-tags {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .tag-category {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 4px 10px;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .tag-teoria {
+      background: rgba(139, 92, 246, 0.15);
+      color: #c084fc;
+      border: 1px solid rgba(139, 92, 246, 0.3);
+    }
+
+    .tag-casos {
+      background: rgba(245, 158, 11, 0.15);
+      color: var(--accent-amber);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+
+    .tag-id {
+      background: var(--bg-surface);
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      padding: 4px 8px;
+      border-radius: 6px;
+      border: 1px solid var(--border-subtle);
+    }
+
+    .question-status-badge {
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+
+    .status-unanswered {
+      background: rgba(148, 163, 184, 0.1);
+      color: var(--text-dark);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .status-correct {
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--accent-emerald);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .status-incorrect {
+      background: rgba(244, 63, 94, 0.15);
+      color: var(--accent-rose);
+      border: 1px solid rgba(244, 63, 94, 0.3);
+    }
+
+    .question-prompt {
+      font-size: 1.12rem;
+      font-weight: 600;
+      line-height: 1.6;
+      color: var(--text-main);
+      margin-bottom: 24px;
+    }
+
+    .prompt-highlight {
+      color: #a78bfa;
+      font-weight: 700;
+    }
+
+    /* Options List */
+    .options-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .option-btn {
+      background: var(--bg-surface);
+      border: 1.5px solid var(--border-light);
+      border-radius: var(--radius-md);
+      padding: 16px 20px;
+      color: var(--text-main);
+      text-align: left;
+      font-family: inherit;
+      font-size: 0.95rem;
+      cursor: pointer;
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      outline: none;
+    }
+
+    .option-btn:hover:not(:disabled) {
+      background: var(--bg-card-hover);
+      border-color: var(--accent-purple);
+      transform: translateX(4px);
+      box-shadow: 0 4px 12px rgba(139, 92, 246, 0.2);
+    }
+
+    .option-btn:disabled {
+      cursor: default;
+    }
+
+    .option-letter {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.06);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.82rem;
+      font-family: var(--font-mono);
+      flex-shrink: 0;
+      color: var(--text-muted);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      transition: all 0.2s ease;
+    }
+
+    .option-text {
+      flex: 1;
+      padding-top: 2px;
+      line-height: 1.5;
+    }
+
+    .option-tag-status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .badge-correct-indicator {
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: rgba(16, 185, 129, 0.2);
+      color: var(--accent-emerald);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+    }
+
+    /* State: Selected Correct */
+    .option-btn.state-correct {
+      background: rgba(16, 185, 129, 0.12) !important;
+      border-color: var(--accent-emerald) !important;
+      box-shadow: 0 0 15px var(--accent-emerald-glow) !important;
+    }
+
+    .option-btn.state-correct .option-letter {
+      background: var(--accent-emerald);
+      color: #0b0f19;
+      border-color: var(--accent-emerald);
+    }
+
+    /* State: Selected Incorrect */
+    .option-btn.state-incorrect {
+      background: rgba(244, 63, 94, 0.12) !important;
+      border-color: var(--accent-rose) !important;
+      box-shadow: 0 0 15px var(--accent-rose-glow) !important;
+    }
+
+    .option-btn.state-incorrect .option-letter {
+      background: var(--accent-rose);
+      color: #fff;
+      border-color: var(--accent-rose);
+    }
+
+    /* State: Highlight Correct Answer */
+    .option-btn.state-highlight-correct {
+      background: rgba(16, 185, 129, 0.09) !important;
+      border-color: var(--accent-emerald) !important;
+      border-style: dashed !important;
+    }
+
+    .option-btn.state-highlight-correct .option-letter {
+      background: rgba(16, 185, 129, 0.25);
+      color: var(--accent-emerald);
+      border-color: var(--accent-emerald);
+    }
+
+    .option-btn.state-faded {
+      opacity: 0.55;
+    }
+
+    /* Justification Box */
+    .justification-box {
+      margin-top: 24px;
+      background: linear-gradient(145deg, #181933, #0f1326);
+      border: 1px solid #3b2c6b;
+      border-left: 4px solid var(--accent-purple);
+      border-radius: var(--radius-md);
+      padding: 18px 20px;
+      animation: slideDown 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .justification-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+
+    .justification-badge {
+      background: rgba(139, 92, 246, 0.15);
+      color: #c084fc;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 4px;
+      border: 1px solid rgba(139, 92, 246, 0.3);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .justification-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #e2e8f0;
+      letter-spacing: -0.01em;
+    }
+
+    .justification-body {
+      color: #cbd5e1;
+      font-size: 0.92rem;
+      line-height: 1.6;
+    }
+
+    /* Navigation Footer for Question */
+    .card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 28px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border-subtle);
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .btn-nav {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-light);
+      color: var(--text-main);
+      font-size: 0.85rem;
+      font-weight: 600;
+      padding: 10px 18px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .btn-nav:hover:not(:disabled) {
+      background: var(--bg-surface-elevated);
+      border-color: var(--text-muted);
+    }
+
+    .btn-nav:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .btn-nav-primary {
+      background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+      border-color: transparent;
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+    }
+
+    .btn-nav-primary:hover:not(:disabled) {
+      background: linear-gradient(135deg, #7c3aed, #2563eb);
+      box-shadow: 0 6px 16px rgba(139, 92, 246, 0.45);
+    }
+
+    .btn-finish-exam {
+      background: linear-gradient(135deg, #10b981, #059669);
+      border-color: transparent;
+      color: #fff;
+      font-weight: 700;
+      padding: 8px 16px;
+      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+      cursor: pointer;
+      border-radius: var(--radius-sm);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+      transition: all 0.2s ease;
+    }
+
+    .btn-finish-exam:hover {
+      background: linear-gradient(135deg, #059669, #047857);
+      box-shadow: 0 6px 18px rgba(16, 185, 129, 0.5);
+    }
+
+    /* Sidebar Navigator Palette */
+    .sidebar-panel {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-xl);
+      padding: 20px;
+      box-shadow: var(--shadow-md);
+      position: sticky;
+      top: 90px;
+    }
+
+    .sidebar-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .question-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .grid-btn {
+      aspect-ratio: 1;
+      border-radius: var(--radius-sm);
+      background: var(--bg-surface);
+      border: 1px solid var(--border-light);
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      font-weight: 700;
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      transition: all 0.2s ease;
+    }
+
+    .grid-btn:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--text-muted);
+      color: var(--text-main);
+    }
+
+    .grid-btn.current {
+      outline: 2px solid var(--accent-purple);
+      outline-offset: 2px;
+      color: #fff;
+    }
+
+    .grid-btn.correct {
+      background: rgba(16, 185, 129, 0.2);
+      border-color: var(--accent-emerald);
+      color: var(--accent-emerald);
+    }
+
+    .grid-btn.incorrect {
+      background: rgba(244, 63, 94, 0.2);
+      border-color: var(--accent-rose);
+      color: var(--accent-rose);
+    }
+
+    .grid-legend {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      padding-top: 14px;
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .legend-indicator {
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+    }
+
+    .list-view-container {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    /* Modal Resumen Final de Auditoría */
+    .modal-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .modal-backdrop.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-dialog {
+      background: var(--bg-card);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-xl);
+      max-width: 760px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
+      transform: scale(0.95);
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .modal-backdrop.show .modal-dialog {
+      transform: scale(1);
+    }
+
+    .modal-header-banner {
+      background: linear-gradient(135deg, #131433, #1e293b);
+      padding: 30px;
+      text-align: center;
+      border-bottom: 1px solid var(--border-subtle);
+      position: relative;
+    }
+
+    .verdict-stamp {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.8rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 6px 16px;
+      border-radius: 30px;
+      margin-bottom: 16px;
+    }
+
+    .verdict-pass {
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--accent-emerald);
+      border: 1px solid var(--accent-emerald);
+      box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
+    }
+
+    .verdict-fail {
+      background: rgba(244, 63, 94, 0.15);
+      color: var(--accent-rose);
+      border: 1px solid var(--accent-rose);
+      box-shadow: 0 0 20px rgba(244, 63, 94, 0.2);
+    }
+
+    .score-circle-wrapper {
+      display: flex;
+      justify-content: center;
+      align-items: baseline;
+      gap: 6px;
+      margin: 10px 0;
+    }
+
+    .big-score {
+      font-size: 4rem;
+      font-weight: 800;
+      font-family: var(--font-mono);
+      line-height: 1;
+    }
+
+    .big-scale {
+      font-size: 1.5rem;
+      color: var(--text-dark);
+      font-weight: 600;
+    }
+
+    .modal-body {
+      padding: 24px 30px;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    @media (max-width: 600px) {
+      .summary-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .summary-box {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 12px 14px;
+      text-align: center;
+    }
+
+    .summary-box-title {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+    }
+
+    .summary-box-val {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-top: 4px;
+      font-family: var(--font-mono);
+    }
+
+    .audit-feedback-section {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 16px 20px;
+      margin-bottom: 24px;
+    }
+
+    .audit-feedback-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: var(--accent-purple);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .audit-feedback-text {
+      font-size: 0.88rem;
+      line-height: 1.6;
+      color: #cbd5e1;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      padding: 16px 30px;
+      background: var(--bg-surface);
+      border-top: 1px solid var(--border-subtle);
+      flex-wrap: wrap;
+    }
+
+    .keyboard-hint {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      color: var(--text-dark);
+      font-size: 0.7rem;
+    }
+
+    .kbd {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 4px;
+      padding: 2px 6px;
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      color: var(--text-muted);
+    }
+
+    @media print {
+      body {
+        background: #fff !important;
+        color: #000 !important;
+      }
+      body::before, header, .nav-actions, .filter-bar, .sidebar-panel, .card-footer, .btn-action-outline, .modal-backdrop {
+        display: none !important;
+      }
+      .question-card {
+        border: 1px solid #ccc !important;
+        background: #fff !important;
+        color: #000 !important;
+        box-shadow: none !important;
+        page-break-inside: avoid;
+        margin-bottom: 20px;
+      }
+      .option-btn {
+        background: #f9f9f9 !important;
+        color: #000 !important;
+        border: 1px solid #ddd !important;
+      }
+      .justification-box {
+        background: #fdf4ff !important;
+        border: 1px solid #d8b4fe !important;
+        color: #000 !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation Header -->
+  <header>
+    <div class="nav-container">
+      <div class="brand">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            <path d="m9 12 2 2 4-4"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h1>
+            AUDIT-SIM // PIMS
+            <span class="brand-badge">ISO/IEC 29100 & ANEXO C (27701:2025)</span>
+          </h1>
+          <p>Tema 09: Correspondencia con ISO/IEC 29100 y los 11 Principios de Privacidad (Tablas C.1 y C.2)</p>
+        </div>
+      </div>
+
+      <div class="nav-actions">
+        <a href="index.html" class="topic-link-pill" title="Volver al Hub Central"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>Hub</a>
+        <a href="bloque1.html" class="topic-link-pill" title="Bloque 1">Bloque 1</a>
+        <a href="bloque2.html" class="topic-link-pill" title="Bloque 2">Bloque 2</a>
+        <a href="bloque3.html" class="topic-link-pill active" title="Bloque 3">Bloque 3</a>
+        <a href="bloque4.html" class="topic-link-pill" title="Bloque 4">Bloque 4</a>
+        <a href="bloque5.html" class="topic-link-pill" title="Bloque 5">Bloque 5</a>
+
+        <div class="view-toggle">
+          <button class="view-toggle-btn active" id="btnModeFocus" onclick="setViewMode('focus')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/></svg>
+            Modo Examen
+          </button>
+          <button class="view-toggle-btn" id="btnModeList" onclick="setViewMode('list')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+            Lista Completa
+          </button>
+        </div>
+
+        <!-- Timer -->
+        <div class="timer-pill" title="Tiempo de sesión de examen">
+          <span class="dot"></span>
+          <span id="examTimer">00:00</span>
+        </div>
+
+        <!-- Sound FX toggle -->
+        <button class="btn-icon-toggle" id="btnSoundToggle" onclick="toggleSound()" title="Efectos de sonido (Activar/Desactivar)">
+          <svg id="soundIconOn" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+          </svg>
+          <svg id="soundIconOff" style="display:none;" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="1" y1="1" x2="23" y2="23"></line>
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <line x1="23" y1="9" x2="17" y2="15"></line>
+            <line x1="17" y1="9" x2="23" y2="15"></line>
+          </svg>
+        </button>
+
+        <!-- Final Report Button -->
+        <button class="btn-finish-exam" onclick="openReportModal()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          Dictamen Final
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Body -->
+  <main>
+    <!-- Top Statistics Dashboard -->
+    <div class="dashboard-header">
+      <div class="stats-ribbon">
+        <div class="stat-card stat-progress">
+          <div class="stat-label">
+            <span>Progreso</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          </div>
+          <div class="stat-value">
+            <span id="statAnswered">0</span><small>/ 12</small>
+          </div>
+        </div>
+
+        <div class="stat-card stat-correct">
+          <div class="stat-label">
+            <span>Conformidades (Aciertos)</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <div class="stat-value" style="color: var(--accent-emerald);">
+            <span id="statCorrect">0</span>
+          </div>
+        </div>
+
+        <div class="stat-card stat-incorrect">
+          <div class="stat-label">
+            <span>No Conformidades (Fallos)</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </div>
+          <div class="stat-value" style="color: var(--accent-rose);">
+            <span id="statIncorrect">0</span>
+          </div>
+        </div>
+
+        <div class="stat-card stat-score">
+          <div class="stat-label">
+            <span>Nota Vigesimal (0-20)</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          </div>
+          <div class="stat-value" style="color: #c084fc;">
+            <span id="statGrade">0.0</span><small>/ 20</small>
+          </div>
+        </div>
+      </div>
+
+      <!-- Module Meta -->
+      <div style="text-align: right; font-size: 0.8rem; color: var(--text-muted);">
+        <div>Módulo: <strong>Tema 09 — Mapeo ISO/IEC 29100 (Tablas C.1 y C.2)</strong></div>
+        <div style="margin-top: 4px;">Criterio Aprobatorio: <strong>≥ 14.0 pts (70%)</strong></div>
+      </div>
+    </div>
+
+    <!-- Live Overall Progress Track -->
+    <div class="progress-bar-container">
+      <div class="progress-header">
+        <span style="font-weight: 600; color: var(--text-muted); display:flex; align-items:center; gap:6px;">
+          <span>Avance de Auditoría:</span>
+          <span id="progressPercent" style="color: var(--text-main); font-family: var(--font-mono); font-weight: 700;">0%</span>
+        </span>
+        <div class="progress-meta">
+          <span style="color: var(--accent-emerald);">● Aciertos: <strong id="lblCorrectCount">0</strong></span>
+          <span style="color: var(--accent-rose);">● Errores: <strong id="lblIncorrectCount">0</strong></span>
+          <span style="color: var(--text-dark);">○ Pendientes: <strong id="lblPendingCount">12</strong></span>
+        </div>
+      </div>
+      <div class="progress-track">
+        <div class="progress-segment-correct" id="barCorrect" style="width: 0%;"></div>
+        <div class="progress-segment-incorrect" id="barIncorrect" style="width: 0%;"></div>
+      </div>
+    </div>
+
+    <!-- Filter Buttons Bar -->
+    <div class="filter-bar">
+      <div class="filter-group">
+        <span style="font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: var(--text-dark); margin-right: 4px;">
+          Categoría:
+        </span>
+        <button class="filter-btn active" id="filterAll" onclick="setFilter('Todos')">
+          <span>Todos</span>
+          <span class="filter-count" id="countAll">12</span>
+        </button>
+        <button class="filter-btn" id="filterTeoria" onclick="setFilter('Teoría y Mapeo Normativo')">
+          <span>Teoría y Mapeo Normativo</span>
+          <span class="filter-count" id="countTeoria">6</span>
+        </button>
+        <button class="filter-btn" id="filterCasos" onclick="setFilter('Casos Prácticos de Auditoría')">
+          <span>Casos Prácticos de Auditoría</span>
+          <span class="filter-count" id="countCasos">6</span>
+        </button>
+      </div>
+
+      <div class="filter-actions">
+        <button class="btn-action-outline btn-amber" id="btnRetryWrong" onclick="retryIncorrectOnly()" style="display:none;" title="Reintentar solo las preguntas que fallaste">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+          Reintentar No Conformidades (<span id="lblWrongBtnCount">0</span>)
+        </button>
+        <button class="btn-action-outline" onclick="resetExam()" title="Reiniciar todas las respuestas">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
+          Reiniciar Todo
+        </button>
+      </div>
+    </div>
+
+    <!-- View Mode: FOCUS MODE (One Question + Sidebar Navigator) -->
+    <div id="focusViewLayout" class="exam-layout">
+      <!-- Question Card Container -->
+      <div id="singleQuestionArea">
+        <!-- Rendered Dynamically -->
+      </div>
+
+      <!-- Sidebar Question Palette -->
+      <aside class="sidebar-panel">
+        <div class="sidebar-title">
+          <span>Navegación del Auditor</span>
+          <span class="keyboard-hint">
+            <span class="kbd">←</span> <span class="kbd">→</span>
+          </span>
+        </div>
+
+        <div class="question-grid" id="questionGridNav">
+          <!-- 12 Buttons Generated Dynamically -->
+        </div>
+
+        <div class="grid-legend">
+          <div class="legend-item">
+            <span class="legend-indicator" style="background: rgba(16, 185, 129, 0.4); border: 1px solid var(--accent-emerald);"></span>
+            <span>Conforme (Acierto)</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-indicator" style="background: rgba(244, 63, 94, 0.4); border: 1px solid var(--accent-rose);"></span>
+            <span>No Conformidad (Fallo)</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-indicator" style="background: var(--bg-surface); border: 1px solid var(--border-light);"></span>
+            <span>Pendiente de evaluación</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-indicator" style="border: 2px solid var(--accent-purple); background: transparent;"></span>
+            <span>Pregunta actual en pantalla</span>
+          </div>
+        </div>
+
+        <div style="margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border-subtle); font-size: 0.75rem; color: var(--text-dark);">
+          <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+            <span>Atajos de teclado:</span>
+            <span><span class="kbd">A</span> <span class="kbd">B</span> <span class="kbd">C</span> <span class="kbd">D</span></span>
+          </div>
+          <p>Selecciona con teclado y navega entre preguntas con las flechas.</p>
+        </div>
+      </aside>
+    </div>
+
+    <!-- View Mode: LIST VIEW (All questions in a vertical list) -->
+    <div id="listViewLayout" class="list-view-container" style="display: none;">
+      <!-- All Question Cards Rendered Dynamically -->
+    </div>
+  </main>
+
+  <!-- Modal Dictamen de Auditoría (Resumen Final) -->
+  <div class="modal-backdrop" id="reportModal">
+    <div class="modal-dialog">
+      <div class="modal-header-banner">
+        <div id="verdictStamp" class="verdict-stamp verdict-pass"></div>
+        <h2 style="font-size: 1.45rem; font-weight: 800; margin-bottom: 6px; letter-spacing: -0.01em;">
+          INFORME DE DICTAMEN DE AUDITORÍA
+        </h2>
+        <p style="font-size: 0.85rem; color: var(--text-muted);">
+          Mapeo y Correspondencia ISO/IEC 29100 con ISO/IEC 27701:2025 (Anexo C) — VIII Ciclo
+        </p>
+
+        <div class="score-circle-wrapper">
+          <span class="big-score" id="modalFinalGrade">0.0</span>
+          <span class="big-scale">/ 20</span>
+        </div>
+        <div style="font-family: var(--font-mono); font-size: 0.95rem; color: #c084fc;" id="modalFinalPercent">
+          0% de efectividad auditora
+        </div>
+      </div>
+
+      <div class="modal-body">
+        <div class="summary-grid">
+          <div class="summary-box">
+            <div class="summary-box-title">Conformidades</div>
+            <div class="summary-box-val" style="color: var(--accent-emerald);" id="modalCountCorrect">0 / 12</div>
+          </div>
+          <div class="summary-box">
+            <div class="summary-box-title">No Conformidades</div>
+            <div class="summary-box-val" style="color: var(--accent-rose);" id="modalCountIncorrect">0 / 12</div>
+          </div>
+          <div class="summary-box">
+            <div class="summary-box-title">Tiempo Invertido</div>
+            <div class="summary-box-val" style="color: var(--accent-cyan);" id="modalTimeSpent">00:00</div>
+          </div>
+        </div>
+
+        <div class="audit-feedback-section">
+          <div class="audit-feedback-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            <span>Conclusión y Dictamen Técnico del Auditor Líder</span>
+          </div>
+          <p class="audit-feedback-text" id="modalVerdictText"></p>
+        </div>
+
+        <div style="background: var(--bg-surface); border-radius: var(--radius-md); padding: 14px 18px; border: 1px solid var(--border-subtle);">
+          <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 10px;">
+            Desglose por Dominio Normativo (Anexo C)
+          </div>
+          <div style="display:flex; flex-direction:column; gap:8px; font-size: 0.85rem;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span>1. Teoría y Mapeo Normativo (Tablas C.1 y C.2, Principios N/A, PIA):</span>
+              <strong id="modalTeoriaScore" style="font-family: var(--font-mono); color: #c084fc;">0 / 6</strong>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span>2. Casos Prácticos de Auditoría (Minimización, Calidad, Joint Controllers):</span>
+              <strong id="modalCasosScore" style="font-family: var(--font-mono); color: var(--accent-amber);">0 / 6</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-action-outline" onclick="window.print()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          Imprimir Dictamen
+        </button>
+        <button class="btn-action-outline" onclick="closeReportModal()">
+          Revisar Preguntas
+        </button>
+        <button class="btn-finish-exam" onclick="resetExam(); closeReportModal();">
+          Reintentar Todo
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /**
+     * BASE DE DATOS DE PREGUNTAS (TEMA 09: ISO/IEC 29100 & ANEXO C ISO/IEC 27701:2025)
+     * Incrustada exactamente como fue especificado
+     */
+    const questions = [
+      // --- SECCIÓN 1: TEORÍA Y MAPEO NORMATIVO ---
+      {
+        id: 1,
+        category: "Teoría y Mapeo Normativo",
+        question: "Al analizar la correspondencia entre los 11 principios de privacidad de ISO/IEC 29100 y los controles para Encargados (PII Processors) en la Tabla C.2 de ISO/IEC 27701:2025, ¿cuáles principios figuran expresamente como 'N/A' (No Aplicables)?",
+        options: [
+          "A) Principio 10 (Information security) y Principio 11 (Privacy compliance).",
+          "B) Principio 3 (Collection limitation) y Principio 6 (Accuracy and quality).",
+          "C) Principio 4 (Data minimization) y Principio 5 (Use, retention and disclosure limitation).",
+          "D) Principio 7 (Openness, transparency and notice) y Principio 9 (Accountability)."
+        ],
+        correct: 1, // B
+        justification: "Tabla C.2 de ISO/IEC 27701:2025: Los principios 3 (Collection limitation) y 6 (Accuracy and quality) están marcados como 'N/A' para PII Processors porque el encargado no recopila directamente del titular ni determina la exactitud de los datos de origen, sino que procesa por cuenta e instrucciones del responsable."
+      },
+      {
+        id: 2,
+        category: "Teoría y Mapeo Normativo",
+        question: "Bajo la Tabla C.1, ¿qué controles de la norma ISO/IEC 27701:2025 comparten de forma cruzada el Principio 4 (Data minimization) y el Principio 5 (Use, retention and disclosure limitation) de ISO/IEC 29100?",
+        options: [
+          "A) A.1.4.5 (PII minimization objectives) y A.1.4.6 (PII de-identification and deletion at the end of processing).",
+          "B) A.1.2.4 (Obtención de consentimiento) y A.1.2.7 (Contratos con procesadores).",
+          "C) A.1.3.3 (Determinación de información) y A.1.3.7 (Acceso y rectificación).",
+          "D) A.1.5.2 (Transferencias transfronterizas) y A.1.5.3 (Países receptores)."
+        ],
+        correct: 0, // A
+        justification: "Tabla C.1: Tanto el Principio 4 (Data minimization) como el Principio 5 (Use, retention and disclosure limitation) mapean directamente a los controles A.1.4.5 (objetivos de minimización/desidentificación) y A.1.4.6 (eliminación o desidentificación al terminar el tratamiento)."
+      },
+      {
+        id: 3,
+        category: "Teoría y Mapeo Normativo",
+        question: "En la correspondencia de ISO/IEC 29100 con ISO/IEC 27701:2025, ¿a qué control específico de PII Controllers mapea de forma exclusiva el Principio 11 (Privacy compliance) según la Tabla C.1?",
+        options: [
+          "A) A.1.4.10 (PII transmission controls).",
+          "B) A.1.2.6 (Privacy impact assessment - PIA).",
+          "C) A.1.3.5 (Providing mechanism to modify or withdraw consent).",
+          "D) A.1.2.8 (Joint PII controller)."
+        ],
+        correct: 1, // B
+        justification: "Tabla C.1: En '11. Privacy compliance (ISO/IEC 29100:2024, 6.12)', el único control relacionado para PII Controllers es 'A.1.2.6 Privacy impact assessment'."
+      },
+      {
+        id: 4,
+        category: "Teoría y Mapeo Normativo",
+        question: "¿Cómo satisface un Procesador de PII (PII Processor) el Principio 8 (Individual participation and access) de la norma ISO/IEC 29100 según la Tabla C.2?",
+        options: [
+          "A) Publicando un portal web independiente donde los titulares pueden solicitar la baja directa de sus cuentas sin avisar al cliente.",
+          "B) Mediante el control A.2.3.2 (Comply with obligations to PII principals), proporcionando al cliente (Controller) los medios técnicos y organizativos para que este cumpla con sus obligaciones hacia los titulares.",
+          "C) El principio es calificado como N/A para procesadores en todas las circunstancias.",
+          "D) Contratando un DPO externo que atienda directamente las reclamaciones judiciales de los usuarios."
+        ],
+        correct: 1, // B
+        justification: "Tabla C.2: Para '8. Individual participation and access (ISO/IEC 29100:2024, 6.9)', el control asociado es A.2.3.2 ('Comply with obligations to PII principals'), cuyo mandato es dar al cliente los medios necesarios para responder al titular."
+      },
+      {
+        id: 5,
+        category: "Teoría y Mapeo Normativo",
+        question: "Según la Tabla C.1, ¿cuál de los siguientes grupos de controles corresponde al Principio 7 (Openness, transparency and notice) de ISO/IEC 29100 para PII Controllers?",
+        options: [
+          "A) A.1.4.8 (Retention) y A.1.4.9 (Disposal).",
+          "B) A.1.3.3 (Determining information for PII principals) y A.1.3.4 (Providing information to PII principals).",
+          "C) A.1.2.7 (Contracts with PII processors) y A.1.2.8 (Joint PII controller).",
+          "D) A.1.4.4 (Accuracy and quality) y A.1.4.7 (Temporary files)."
+        ],
+        correct: 1, // B
+        justification: "Tabla C.1: '7. Openness, transparency and notice (ISO/IEC 29100:2024, 6.8)' mapea a A.1.3.3 (Determinar la información a proporcionar al titular) y A.1.3.4 (Proporcionar información clara, accesible e inteligible)."
+      },
+      {
+        id: 6,
+        category: "Teoría y Mapeo Normativo",
+        question: "Respecto al Principio 9 (Accountability / Responsabilidad proactiva) en PII Processors, ¿qué controles de la Tabla A.2 respaldan este principio de acuerdo con la Tabla C.2?",
+        options: [
+          "A) A.2.2.3 (Organization's purposes) y A.2.2.4 (Marketing and advertising use).",
+          "B) A.2.2.7 (Records related to processing PII), A.2.4.3 (Return, transfer or disposal of PII), A.2.5.2 (Basis for PII transfer between jurisdictions) y A.2.5.3 (Countries and international organizations to which PII can be transferred).",
+          "C) A.2.4.2 (Temporary files) y A.2.4.4 (PII transmission controls).",
+          "D) Únicamente el control A.2.2.5 sobre advertencia de instrucciones infractoras."
+        ],
+        correct: 1, // B
+        justification: "Tabla C.2: '9. Accountability (ISO/IEC 29100:2024, 6.10)' vincula formalmente los controles A.2.2.7 (registros del tratamiento), A.2.4.3 (política de retorno/disposición), A.2.5.2 (base legal de transferencias) y A.2.5.3 (especificación de países de destino)."
+      },
+
+      // --- SECCIÓN 2: CASOS PRÁCTICOS DE AUDITORÍA ---
+      {
+        id: 7,
+        category: "Casos Prácticos de Auditoría",
+        question: "CASO 1: Una aplicación móvil de linterna exige de manera obligatoria permisos para acceder a la lista completa de contactos, la galería de fotos y la ubicación GPS del usuario para poder encender el flash LED. ¿Qué principio de la ISO/IEC 29100 y qué control de ISO/IEC 27701:2025 se están vulnerando directamente?",
+        options: [
+          "A) Principio 6 (Accuracy and quality) y control A.1.4.4.",
+          "B) Principio 3 (Collection limitation) de ISO/IEC 29100 y control A.1.4.2 (Limit collection).",
+          "C) Principio 10 (Information security) y control A.1.2.7.",
+          "D) Principio 11 (Privacy compliance) y control A.1.5.2."
+        ],
+        correct: 1, // B
+        justification: "El Principio 3 (Collection limitation) de ISO/IEC 29100 exige recolectar solo lo estrictamente necesario. En la Tabla C.1, este principio se implementa a través del control A.1.4.2 (Limit collection)."
+      },
+      {
+        id: 8,
+        category: "Casos Prácticos de Auditoría",
+        question: "CASO 2: Un banco rechazó un crédito hipotecario debido a que su base de datos registraba una deuda impaga de un cliente que había sido cancelada y certificada hace 5 años, pero el sistema bancario jamás actualizó el estado del registro. Al auditar la conformidad con ISO/IEC 29100 y 27701, ¿qué principio y control resultan no conformes?",
+        options: [
+          "A) Principio 6 (Accuracy and quality) de ISO/IEC 29100 y control A.1.4.4 (Accuracy and quality).",
+          "B) Principio 1 (Consent and choice) y control A.1.2.5.",
+          "C) Principio 5 (Use, retention and disclosure limitation) y control A.1.5.5.",
+          "D) Principio 9 (Accountability) y control A.1.2.8."
+        ],
+        correct: 0, // A
+        justification: "Tabla C.1: El Principio 6 (Accuracy and quality) exige que la PII sea tan exacta, completa y actualizada como sea necesario para los fines de tratamiento, lo cual mapea exclusivamente al control A.1.4.4."
+      },
+      {
+        id: 9,
+        category: "Casos Prácticos de Auditoría",
+        question: "CASO 3: Un proveedor cloud SaaS de planillas (PII Processor) toma la información de sueldos y profesiones de los colaboradores de sus clientes corporativos para entrenar y comercializar su propio modelo predictivo de compensaciones en el mercado, sin autorización de sus clientes. ¿Qué principio de ISO/IEC 29100 y control de la Tabla A.2 infringe?",
+        options: [
+          "A) Principio 3 (Collection limitation) y control A.2.4.2.",
+          "B) Principio 2 (Purpose legitimacy and specification) de ISO/IEC 29100 y controles A.2.2.3 (Organization's purposes) y A.2.2.4 (Marketing and advertising use).",
+          "C) Principio 10 (Information security) y control A.2.4.4.",
+          "D) Principio 8 (Individual participation and access) y control A.2.5.7."
+        ],
+        correct: 1, // B
+        justification: "Tabla C.2: El Principio 2 (Purpose legitimacy and specification) exige que los datos se traten exclusivamente para los fines especificados. En encargados, mapea a A.2.2.3 (tratar solo bajo instrucciones documentadas) y A.2.2.4 (prohibición de uso publicitario/comercial propio)."
+      },
+      {
+        id: 10,
+        category: "Casos Prácticos de Auditoría",
+        question: "CASO 4: Un centro de telemedicina envía historiales clínicos de pacientes y análisis genéticos entre consultorios regionales a través de correos electrónicos en texto plano y servicios de mensajería sin cifrar. Según el mapeo de ISO/IEC 27701 con ISO/IEC 29100, ¿qué principio y control de transferencia se incumplen?",
+        options: [
+          "A) Principio 1 (Consent and choice) y control A.1.2.2.",
+          "B) Principio 10 (Information security) de ISO/IEC 29100 y control A.1.4.10 (PII transmission controls).",
+          "C) Principio 7 (Openness, transparency and notice) y control A.1.3.4.",
+          "D) Principio 4 (Data minimization) y control A.1.4.3."
+        ],
+        correct: 1, // B
+        justification: "Tabla C.1: El Principio 10 (Information security) de ISO/IEC 29100 mapea directamente al control A.1.4.10 (PII transmission controls), el cual exige proteger la PII transmitida por redes de comunicación."
+      },
+      {
+        id: 11,
+        category: "Casos Prácticos de Auditoría",
+        question: "CASO 5: Dos compañías aéreas crean un programa conjunto de viajero frecuente (Joint PII Controllers). Sin embargo, ninguna de las dos documentó el acuerdo de gobernanza, no se determinó quién respondería ante incidentes, ni se informó al usuario qué aerolínea era el punto de contacto para ejercer derechos ARCO. ¿Qué principio de ISO/IEC 29100 y control de ISO/IEC 27701:2025 falló?",
+        options: [
+          "A) Principio 9 (Accountability) de ISO/IEC 29100 y control A.1.2.8 (Joint PII controller).",
+          "B) Principio 3 (Collection limitation) y control A.1.4.2.",
+          "C) Principio 6 (Accuracy and quality) y control A.1.4.4.",
+          "D) Principio 11 (Privacy compliance) y control A.1.4.7."
+        ],
+        correct: 0, // A
+        justification: "Tabla C.1: El Principio 9 (Accountability) engloba el control A.1.2.8 (Joint PII controller), el cual exige delimitar y documentar roles transparentes, responsabilidades de seguridad y el punto de contacto para los titulares."
+      },
+      {
+        id: 12,
+        category: "Casos Prácticos de Auditoría",
+        question: "CASO 6: Una tienda virtual implementa un chatbot de compras y oculta la política de privacidad en un enlace roto al pie de página, impidiendo que el comprador sepa quién es el responsable, qué datos se guardan o cómo revocar el consentimiento. ¿Qué principio de ISO/IEC 29100 y controles de la Tabla A.1 se están vulnerando?",
+        options: [
+          "A) Principio 7 (Openness, transparency and notice) de ISO/IEC 29100 y controles A.1.3.3 y A.1.3.4.",
+          "B) Principio 5 (Use, retention and disclosure limitation) y control A.1.4.8.",
+          "C) Principio 10 (Information security) y control A.1.4.10.",
+          "D) Principio 6 (Accuracy and quality) y control A.1.4.4."
+        ],
+        correct: 0, // A
+        justification: "Tabla C.1: El Principio 7 (Openness, transparency and notice) exige brindar avisos transparentes, claros y accesibles, implementado mediante los controles A.1.3.3 (Determinar información) y A.1.3.4 (Proporcionar información al titular)."
+      }
+    ];
+
+    /**
+     * ESTADO DE LA APLICACIÓN
+     */
+    const state = {
+      userAnswers: {},       // { [questionId]: selectedOptionIndex }
+      currentFilter: 'Todos',// 'Todos' | 'Teoría y Mapeo Normativo' | 'Casos Prácticos de Auditoría'
+      currentQuestionIndex: 0,
+      viewMode: 'focus',     // 'focus' | 'list'
+      soundEnabled: true,
+      secondsElapsed: 0,
+      timerInterval: null
+    };
+
+    /**
+     * AUDIO SINTETIZADO (Web Audio API)
+     */
+    let audioCtx = null;
+    function getAudioContext() {
+      if (!audioCtx) {
+        const AudioClass = window.AudioContext || window.webkitAudioContext;
+        if (AudioClass) audioCtx = new AudioClass();
+      }
+      if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+      return audioCtx;
+    }
+
+    function playSound(type) {
+      if (!state.soundEnabled) return;
+      try {
+        const ctx = getAudioContext();
+        if (!ctx) return;
+        const now = ctx.currentTime;
+        if (type === 'correct') {
+          const osc1 = ctx.createOscillator();
+          const gain1 = ctx.createGain();
+          osc1.type = 'sine';
+          osc1.frequency.setValueAtTime(1046.50, now);
+          gain1.gain.setValueAtTime(0.12, now);
+          gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+          osc1.connect(gain1); gain1.connect(ctx.destination);
+          osc1.start(now); osc1.stop(now + 0.18);
+
+          const osc2 = ctx.createOscillator();
+          const gain2 = ctx.createGain();
+          osc2.type = 'sine';
+          osc2.frequency.setValueAtTime(1567.98, now + 0.08);
+          gain2.gain.setValueAtTime(0.15, now + 0.08);
+          gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+          osc2.connect(gain2); gain2.connect(ctx.destination);
+          osc2.start(now + 0.08); osc2.stop(now + 0.35);
+        } else if (type === 'incorrect') {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(164.81, now);
+          osc.frequency.setValueAtTime(130.81, now + 0.1);
+          gain.gain.setValueAtTime(0.10, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
+          osc.connect(gain); gain.connect(ctx.destination);
+          osc.start(now); osc.stop(now + 0.28);
+        }
+      } catch (e) {}
+    }
+
+    function toggleSound() {
+      state.soundEnabled = !state.soundEnabled;
+      document.getElementById('soundIconOn').style.display = state.soundEnabled ? 'block' : 'none';
+      document.getElementById('soundIconOff').style.display = state.soundEnabled ? 'none' : 'block';
+    }
+
+    /**
+     * CRONÓMETRO
+     */
+    function startTimer() {
+      if (state.timerInterval) clearInterval(state.timerInterval);
+      state.timerInterval = setInterval(() => {
+        state.secondsElapsed++;
+        const mins = String(Math.floor(state.secondsElapsed / 60)).padStart(2, '0');
+        const secs = String(state.secondsElapsed % 60).padStart(2, '0');
+        const el = document.getElementById('examTimer');
+        if (el) el.textContent = `${mins}:${secs}`;
+      }, 1000);
+    }
+
+    function getFilteredQuestions() {
+      if (state.currentFilter === 'Todos') return questions;
+      return questions.filter(q => q.category === state.currentFilter);
+    }
+
+    function calculateStats() {
+      const total = questions.length;
+      let answeredCount = 0;
+      let correctCount = 0;
+      let incorrectCount = 0;
+
+      questions.forEach(q => {
+        if (state.userAnswers.hasOwnProperty(q.id)) {
+          answeredCount++;
+          if (state.userAnswers[q.id] === q.correct) correctCount++;
+          else incorrectCount++;
+        }
+      });
+
+      const pendingCount = total - answeredCount;
+      const progressPercent = Math.round((answeredCount / total) * 100);
+      const accuracyPercent = total > 0 ? Math.round((correctCount / total) * 100) : 0;
+      const grade = ((correctCount / total) * 20).toFixed(1);
+
+      return { total, answeredCount, correctCount, incorrectCount, pendingCount, progressPercent, accuracyPercent, grade };
+    }
+
+    function updateMetricsUI() {
+      const stats = calculateStats();
+
+      document.getElementById('statAnswered').textContent = stats.answeredCount;
+      document.getElementById('statCorrect').textContent = stats.correctCount;
+      document.getElementById('statIncorrect').textContent = stats.incorrectCount;
+      document.getElementById('statGrade').textContent = stats.grade;
+
+      document.getElementById('progressPercent').textContent = `${stats.progressPercent}%`;
+      document.getElementById('lblCorrectCount').textContent = stats.correctCount;
+      document.getElementById('lblIncorrectCount').textContent = stats.incorrectCount;
+      document.getElementById('lblPendingCount').textContent = stats.pendingCount;
+
+      const correctPct = (stats.correctCount / stats.total) * 100;
+      const incorrectPct = (stats.incorrectCount / stats.total) * 100;
+      document.getElementById('barCorrect').style.width = `${correctPct}%`;
+      document.getElementById('barIncorrect').style.width = `${incorrectPct}%`;
+
+      const retryBtn = document.getElementById('btnRetryWrong');
+      const wrongCountLbl = document.getElementById('lblWrongBtnCount');
+      if (stats.incorrectCount > 0) {
+        retryBtn.style.display = 'inline-flex';
+        wrongCountLbl.textContent = stats.incorrectCount;
+      } else {
+        retryBtn.style.display = 'none';
+      }
+
+      renderNavigationGrid();
+    }
+
+    function renderNavigationGrid() {
+      const grid = document.getElementById('questionGridNav');
+      if (!grid) return;
+      grid.innerHTML = '';
+
+      const currentFiltered = getFilteredQuestions();
+
+      questions.forEach((q) => {
+        const btn = document.createElement('button');
+        btn.className = 'grid-btn';
+
+        const isAnswered = state.userAnswers.hasOwnProperty(q.id);
+        const isCorrect = isAnswered && state.userAnswers[q.id] === q.correct;
+        const isIncorrect = isAnswered && state.userAnswers[q.id] !== q.correct;
+
+        const currentQ = currentFiltered[state.currentQuestionIndex];
+        if (state.viewMode === 'focus' && currentQ && currentQ.id === q.id) {
+          btn.classList.add('current');
+        }
+
+        if (isCorrect) btn.classList.add('correct');
+        else if (isIncorrect) btn.classList.add('incorrect');
+
+        btn.textContent = q.id;
+        btn.title = `Pregunta ${q.id} - ${q.category}`;
+
+        btn.onclick = () => {
+          if (state.viewMode === 'focus') {
+            const filteredIndex = currentFiltered.findIndex(item => item.id === q.id);
+            if (filteredIndex !== -1) {
+              state.currentQuestionIndex = filteredIndex;
+            } else {
+              setFilter('Todos');
+              state.currentQuestionIndex = q.id - 1;
+            }
+            renderFocusMode();
+          } else {
+            let el = document.getElementById(`card-q-${q.id}`);
+            if (!el) {
+              setFilter('Todos');
+              el = document.getElementById(`card-q-${q.id}`);
+            }
+            if (el) {
+              el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              el.style.boxShadow = '0 0 25px rgba(139, 92, 246, 0.4)';
+              setTimeout(() => el.style.boxShadow = '', 1200);
+            }
+          }
+        };
+
+        grid.appendChild(btn);
+      });
+    }
+
+    function handleSelectOption(questionId, selectedIdx) {
+      if (state.userAnswers.hasOwnProperty(questionId)) return;
+
+      const q = questions.find(item => item.id === questionId);
+      if (!q) return;
+
+      state.userAnswers[questionId] = selectedIdx;
+
+      if (selectedIdx === q.correct) playSound('correct');
+      else playSound('incorrect');
+
+      if (state.viewMode === 'focus') renderFocusMode();
+      else renderListView();
+
+      updateMetricsUI();
+
+      const stats = calculateStats();
+      if (stats.answeredCount === stats.total) {
+        setTimeout(() => openReportModal(), 800);
+      }
+    }
+
+    function buildQuestionHTML(q, indexWithinView, totalInView) {
+      const isAnswered = state.userAnswers.hasOwnProperty(q.id);
+      const userSelected = state.userAnswers[q.id];
+      const isCorrect = isAnswered && userSelected === q.correct;
+
+      const categoryClass = q.category === 'Teoría y Mapeo Normativo' ? 'tag-teoria' : 'tag-casos';
+
+      let statusBadge = `
+        <span class="question-status-badge status-unanswered">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>
+          Pendiente
+        </span>
+      `;
+      if (isAnswered) {
+        if (isCorrect) {
+          statusBadge = `
+            <span class="question-status-badge status-correct">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              Conforme (Correcta)
+            </span>
+          `;
+        } else {
+          statusBadge = `
+            <span class="question-status-badge status-incorrect">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              No Conformidad (Incorrecta)
+            </span>
+          `;
+        }
+      }
+
+      let promptText = q.question;
+      if (promptText.startsWith("CASO ")) {
+        promptText = promptText.replace(/^(CASO \d+:)/, '<span class="prompt-highlight">$1</span>');
+      }
+
+      const letters = ['A', 'B', 'C', 'D'];
+      const optionsHTML = q.options.map((optText, optIdx) => {
+        let optStateClass = '';
+        let isOptionDisabled = isAnswered ? 'disabled' : '';
+        let statusTag = '';
+
+        if (isAnswered) {
+          if (optIdx === q.correct) {
+            if (userSelected === optIdx) {
+              optStateClass = 'state-correct';
+              statusTag = `
+                <div class="option-tag-status">
+                  <span class="badge-correct-indicator">✓ Correcta</span>
+                </div>
+              `;
+            } else {
+              optStateClass = 'state-highlight-correct';
+              statusTag = `
+                <div class="option-tag-status">
+                  <span class="badge-correct-indicator">★ Respuesta Correcta</span>
+                </div>
+              `;
+            }
+          } else if (userSelected === optIdx) {
+            optStateClass = 'state-incorrect';
+            statusTag = `
+              <div class="option-tag-status">
+                <span style="font-size: 0.68rem; font-weight:700; color: var(--accent-rose); background: rgba(244,63,94,0.15); border: 1px solid rgba(244,63,94,0.3); padding: 2px 8px; border-radius: 4px;">
+                  ✗ Tu Selección
+                </span>
+              </div>
+            `;
+          } else {
+            optStateClass = 'state-faded';
+          }
+        }
+
+        const cleanText = optText.replace(/^[A-D]\)\s*/, '');
+
+        return `
+          <button 
+            type="button"
+            class="option-btn ${optStateClass}" 
+            ${isOptionDisabled}
+            onclick="handleSelectOption(${q.id}, ${optIdx})"
+          >
+            <span class="option-letter">${letters[optIdx]}</span>
+            <span class="option-text">${cleanText}</span>
+            ${statusTag}
+          </button>
+        `;
+      }).join('');
+
+      let justificationHTML = '';
+      if (isAnswered) {
+        justificationHTML = `
+          <div class="justification-box">
+            <div class="justification-header">
+              <span class="justification-badge">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                JUSTIFICACIÓN AUDITORA & CITA NORMATIVA
+              </span>
+              <span class="justification-title">ISO/IEC 29100 & ANEXO C (ISO/IEC 27701:2025)</span>
+            </div>
+            <div class="justification-body">
+              ${q.justification}
+            </div>
+          </div>
+        `;
+      }
+
+      let footerHTML = '';
+      if (state.viewMode === 'focus') {
+        const hasPrev = indexWithinView > 0;
+        const hasNext = indexWithinView < totalInView - 1;
+
+        footerHTML = `
+          <div class="card-footer">
+            <div style="font-size: 0.8rem; color: var(--text-muted); font-family: var(--font-mono);">
+              Pregunta ${indexWithinView + 1} de ${totalInView} (Mapeo ID #${q.id})
+            </div>
+            <div style="display: flex; gap: 8px;">
+              <button 
+                class="btn-nav" 
+                ${!hasPrev ? 'disabled' : ''} 
+                onclick="navigateQuestion(-1)"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+                Anterior
+              </button>
+              
+              ${hasNext ? `
+                <button 
+                  class="btn-nav btn-nav-primary" 
+                  onclick="navigateQuestion(1)"
+                >
+                  Siguiente
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                </button>
+              ` : `
+                <button 
+                  class="btn-finish-exam" 
+                  onclick="openReportModal()"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                  Finalizar y Ver Dictamen
+                </button>
+              `}
+            </div>
+          </div>
+        `;
+      }
+
+      return `
+        <div class="question-card" id="card-q-${q.id}">
+          <div class="question-header">
+            <div class="question-tags">
+              <span class="tag-id">PREGUNTA #${q.id}</span>
+              <span class="tag-category ${categoryClass}">${q.category}</span>
+            </div>
+            ${statusBadge}
+          </div>
+
+          <div class="question-prompt">
+            ${promptText}
+          </div>
+
+          <div class="options-list">
+            ${optionsHTML}
+          </div>
+
+          ${justificationHTML}
+          ${footerHTML}
+        </div>
+      `;
+    }
+
+    function renderFocusMode() {
+      const filtered = getFilteredQuestions();
+      const container = document.getElementById('singleQuestionArea');
+      if (!container) return;
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="question-card" style="text-align: center; padding: 40px;">
+            <p style="color: var(--text-muted);">No hay preguntas disponibles para el filtro seleccionado.</p>
+          </div>
+        `;
+        return;
+      }
+
+      if (state.currentQuestionIndex >= filtered.length) state.currentQuestionIndex = filtered.length - 1;
+      if (state.currentQuestionIndex < 0) state.currentQuestionIndex = 0;
+
+      const currentQ = filtered[state.currentQuestionIndex];
+      container.innerHTML = buildQuestionHTML(currentQ, state.currentQuestionIndex, filtered.length);
+      renderNavigationGrid();
+    }
+
+    function renderListView() {
+      const filtered = getFilteredQuestions();
+      const container = document.getElementById('listViewLayout');
+      if (!container) return;
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="question-card" style="text-align: center; padding: 40px;">
+            <p style="color: var(--text-muted);">No hay preguntas en esta categoría.</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = filtered.map((q, idx) => buildQuestionHTML(q, idx, filtered.length)).join('');
+      renderNavigationGrid();
+    }
+
+    function navigateQuestion(offset) {
+      const filtered = getFilteredQuestions();
+      const newIdx = state.currentQuestionIndex + offset;
+      if (newIdx >= 0 && newIdx < filtered.length) {
+        state.currentQuestionIndex = newIdx;
+        renderFocusMode();
+      }
+    }
+
+    function setViewMode(mode) {
+      state.viewMode = mode;
+      const btnFocus = document.getElementById('btnModeFocus');
+      const btnList = document.getElementById('btnModeList');
+      const focusLayout = document.getElementById('focusViewLayout');
+      const listLayout = document.getElementById('listViewLayout');
+
+      if (mode === 'focus') {
+        btnFocus.classList.add('active');
+        btnList.classList.remove('active');
+        focusLayout.style.display = 'grid';
+        listLayout.style.display = 'none';
+        renderFocusMode();
+      } else {
+        btnFocus.classList.remove('active');
+        btnList.classList.add('active');
+        focusLayout.style.display = 'none';
+        listLayout.style.display = 'flex';
+        renderListView();
+      }
+    }
+
+    function setFilter(filterName) {
+      state.currentFilter = filterName;
+      state.currentQuestionIndex = 0;
+
+      document.getElementById('filterAll').classList.toggle('active', filterName === 'Todos');
+      document.getElementById('filterTeoria').classList.toggle('active', filterName === 'Teoría y Mapeo Normativo');
+      document.getElementById('filterCasos').classList.toggle('active', filterName === 'Casos Prácticos de Auditoría');
+
+      if (state.viewMode === 'focus') renderFocusMode();
+      else renderListView();
+    }
+
+    function retryIncorrectOnly() {
+      const incorrectIds = [];
+      questions.forEach(q => {
+        if (state.userAnswers.hasOwnProperty(q.id) && state.userAnswers[q.id] !== q.correct) {
+          incorrectIds.push(q.id);
+        }
+      });
+
+      if (incorrectIds.length === 0) return;
+
+      incorrectIds.forEach(id => {
+        delete state.userAnswers[id];
+      });
+
+      const firstFailedIndex = questions.findIndex(q => q.id === incorrectIds[0]);
+      if (firstFailedIndex !== -1) {
+        setFilter('Todos');
+        state.currentQuestionIndex = firstFailedIndex;
+      }
+
+      updateMetricsUI();
+      if (state.viewMode === 'focus') renderFocusMode();
+      else renderListView();
+    }
+
+    function resetExam() {
+      if (Object.keys(state.userAnswers).length > 0) {
+        const confirmReset = confirm("¿Deseas reiniciar todas las respuestas del simulador del Tema 09 y comenzar de nuevo?");
+        if (!confirmReset) return;
+      }
+
+      state.userAnswers = {};
+      state.currentQuestionIndex = 0;
+      state.secondsElapsed = 0;
+      updateMetricsUI();
+
+      if (state.viewMode === 'focus') renderFocusMode();
+      else renderListView();
+    }
+
+    function openReportModal() {
+      const stats = calculateStats();
+      const modal = document.getElementById('reportModal');
+
+      document.getElementById('modalFinalGrade').textContent = stats.grade;
+      document.getElementById('modalFinalPercent').textContent = `${stats.accuracyPercent}% de efectividad auditora`;
+      document.getElementById('modalCountCorrect').textContent = `${stats.correctCount} / 12`;
+      document.getElementById('modalCountIncorrect').textContent = `${stats.incorrectCount} / 12`;
+
+      const mins = String(Math.floor(state.secondsElapsed / 60)).padStart(2, '0');
+      const secs = String(state.secondsElapsed % 60).padStart(2, '0');
+      document.getElementById('modalTimeSpent').textContent = `${mins}:${secs}`;
+
+      let teoriaCorrect = 0;
+      let casosCorrect = 0;
+      questions.forEach(q => {
+        if (state.userAnswers[q.id] === q.correct) {
+          if (q.category === 'Teoría y Mapeo Normativo') teoriaCorrect++;
+          else casosCorrect++;
+        }
+      });
+      document.getElementById('modalTeoriaScore').textContent = `${teoriaCorrect} / 6 (${Math.round((teoriaCorrect/6)*100)}%)`;
+      document.getElementById('modalCasosScore').textContent = `${casosCorrect} / 6 (${Math.round((casosCorrect/6)*100)}%)`;
+
+      const gradeNum = parseFloat(stats.grade);
+      const stampEl = document.getElementById('verdictStamp');
+      const verdictTextEl = document.getElementById('modalVerdictText');
+
+      if (gradeNum >= 17) {
+        stampEl.className = 'verdict-stamp verdict-pass';
+        stampEl.innerHTML = `
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          DICTAMEN: APROBADO SOBRESALIENTE (AUDITOR LÍDER PIMS)
+        `;
+        verdictTextEl.innerHTML = `
+          <strong>Sobresaliente:</strong> El estudiante demuestra dominio pleno en el mapeo cruzado entre los 11 Principios de Privacidad de ISO/IEC 29100 y las Tablas C.1 (Controllers) y C.2 (Processors) de ISO/IEC 27701:2025. Identifica con exactitud los principios no aplicables a procesadores (Collection Limitation y Accuracy) y los controles de minimización y desidentificación (A.1.4.5 / A.1.4.6).
+        `;
+      } else if (gradeNum >= 14) {
+        stampEl.className = 'verdict-stamp verdict-pass';
+        stampEl.innerHTML = `
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          DICTAMEN: APROBADO CON OBSERVACIONES MENORES
+        `;
+        verdictTextEl.innerHTML = `
+          <strong>Aprobado:</strong> El estudiante alcanza el nivel de suficiencia exigido para el 8vo ciclo. Reconoce la correspondencia entre los principios de ISO/IEC 29100 y los controles del Anexo A, aunque se sugiere repasar las obligaciones de Joint Controllers (A.1.2.8) y los controles de transmisión segura (A.1.4.10).
+        `;
+      } else {
+        stampEl.className = 'verdict-stamp verdict-fail';
+        stampEl.innerHTML = `
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          DICTAMEN: DESAPROBADO — NO CONFORME (REPROBADO)
+        `;
+        verdictTextEl.innerHTML = `
+          <strong>No Conformidad Mayor:</strong> La nota obtenida (${stats.grade}/20) no cumple con el puntaje mínimo de aprobación (14.0). Se detectaron dificultades en la correlación de los principios de minimización de datos, avisos de privacidad transparentes y las limitaciones de uso publicitario de procesadores. Se recomienda estudiar detalladamente el Anexo C antes del examen parcial.
+        `;
+      }
+
+      modal.classList.add('show');
+    }
+
+    function closeReportModal() {
+      document.getElementById('reportModal').classList.remove('show');
+    }
+
+    window.addEventListener('keydown', (e) => {
+      if (document.getElementById('reportModal').classList.contains('show')) {
+        if (e.key === 'Escape') closeReportModal();
+        return;
+      }
+
+      if (state.viewMode === 'focus') {
+        if (e.key === 'ArrowLeft') navigateQuestion(-1);
+        else if (e.key === 'ArrowRight') navigateQuestion(1);
+      }
+
+      const key = e.key.toUpperCase();
+      const keyMap = { 'A': 0, '1': 0, 'B': 1, '2': 1, 'C': 2, '3': 2, 'D': 3, '4': 3 };
+      if (keyMap.hasOwnProperty(key)) {
+        if (state.viewMode === 'focus') {
+          const filtered = getFilteredQuestions();
+          const currentQ = filtered[state.currentQuestionIndex];
+          if (currentQ) handleSelectOption(currentQ.id, keyMap[key]);
+        }
+      }
+    });
+
+    document.getElementById('reportModal').addEventListener('click', (e) => {
+      if (e.target.id === 'reportModal') closeReportModal();
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+      updateMetricsUI();
+      renderFocusMode();
+      startTimer();
+    });
+  </script>
+</body>
+</html>

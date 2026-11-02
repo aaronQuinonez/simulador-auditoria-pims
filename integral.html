@@ -1,0 +1,3147 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simulador de Examen Parcial - Auditoría de Sistemas | ISO/IEC 27701:2025 PIMS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-main: #0b0f19;
+      --bg-card: #111827;
+      --bg-card-hover: #162032;
+      --bg-surface: #1e293b;
+      --bg-surface-elevated: #27354a;
+      
+      --border-subtle: #1f293d;
+      --border-light: #334155;
+      --border-accent: #3b82f6;
+
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dark: #64748b;
+
+      --accent-cyan: #06b6d4;
+      --accent-blue: #3b82f6;
+      --accent-emerald: #10b981;
+      --accent-emerald-glow: rgba(16, 185, 129, 0.25);
+      --accent-rose: #f43f5e;
+      --accent-rose-glow: rgba(244, 63, 94, 0.25);
+      --accent-amber: #f59e0b;
+      --accent-purple: #8b5cf6;
+
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-xl: 20px;
+
+      --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
+      --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+      --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.5);
+      --shadow-glow: 0 0 20px rgba(6, 182, 212, 0.15);
+
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'Fira Code', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+      line-height: 1.5;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-image: 
+        radial-gradient(circle at 15% 15%, rgba(6, 182, 212, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 85% 85%, rgba(99, 102, 241, 0.08) 0%, transparent 40%),
+        linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+      background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px;
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    /* Top Banner for Topic Selector */
+    .topic-banner {
+      background: linear-gradient(90deg, #091326, #111e38, #0e1a30);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 8px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .topic-pills {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .topic-pill-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-light);
+      color: var(--text-muted);
+      font-size: 0.76rem;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 20px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .topic-pill-btn:hover {
+      background: var(--bg-surface-elevated);
+      color: var(--text-main);
+      border-color: var(--accent-cyan);
+    }
+
+    .topic-pill-btn.active {
+      background: var(--accent-cyan);
+      color: #0b0f19;
+      font-weight: 700;
+      border-color: var(--accent-cyan);
+      box-shadow: 0 0 10px rgba(6, 182, 212, 0.3);
+    }
+
+    /* Top Navigation Bar */
+    header {
+      background: rgba(17, 24, 39, 0.9);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border-subtle);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      padding: 12px 24px;
+    }
+
+    .nav-container {
+      max-width: 1300px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: var(--radius-md);
+      background: linear-gradient(135deg, #0ea5e9, #6366f1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 15px rgba(14, 165, 233, 0.4);
+      flex-shrink: 0;
+    }
+
+    .brand-icon svg {
+      width: 24px;
+      height: 24px;
+      color: #fff;
+    }
+
+    .brand-text h1 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .brand-badge {
+      background: rgba(6, 182, 212, 0.15);
+      color: var(--accent-cyan);
+      font-size: 0.65rem;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 4px;
+      border: 1px solid rgba(6, 182, 212, 0.3);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .brand-text p {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    /* Mode Pill Switches */
+    .view-toggle {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-light);
+      border-radius: 30px;
+      padding: 3px;
+      display: flex;
+      gap: 2px;
+    }
+
+    .view-toggle-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 20px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .view-toggle-btn.active {
+      background: var(--accent-blue);
+      color: #fff;
+      box-shadow: 0 2px 6px rgba(59, 130, 246, 0.35);
+    }
+
+    .btn-icon-toggle {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-light);
+      color: var(--text-muted);
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-icon-toggle:hover {
+      background: var(--bg-surface-elevated);
+      color: var(--text-main);
+      border-color: var(--accent-cyan);
+    }
+
+    .timer-pill {
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid var(--border-light);
+      border-radius: 20px;
+      padding: 6px 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--accent-cyan);
+      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5);
+    }
+
+    .timer-pill .dot {
+      width: 8px;
+      height: 8px;
+      background: var(--accent-cyan);
+      border-radius: 50%;
+      animation: pulse 2s infinite ease-in-out;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.3; transform: scale(0.85); }
+    }
+
+    /* Main Container */
+    main {
+      max-width: 1300px;
+      margin: 0 auto;
+      padding: 24px;
+      flex: 1;
+      width: 100%;
+    }
+
+    /* Dashboard Metrics & Filters */
+    .dashboard-header {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 20px;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+
+    @media (max-width: 900px) {
+      .dashboard-header {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .stats-ribbon {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+
+    @media (max-width: 768px) {
+      .stats-ribbon {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    .stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 12px 16px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.2s ease, transform 0.2s ease;
+    }
+
+    .stat-card::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 3px;
+      height: 100%;
+      background: var(--card-accent, var(--border-light));
+    }
+
+    .stat-card.stat-progress { --card-accent: var(--accent-cyan); }
+    .stat-card.stat-correct { --card-accent: var(--accent-emerald); }
+    .stat-card.stat-incorrect { --card-accent: var(--accent-rose); }
+    .stat-card.stat-score { --card-accent: var(--accent-purple); }
+
+    .stat-card:hover {
+      border-color: var(--border-light);
+      transform: translateY(-1px);
+    }
+
+    .stat-label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .stat-value {
+      font-size: 1.4rem;
+      font-weight: 700;
+      margin-top: 4px;
+      font-family: var(--font-mono);
+      display: flex;
+      align-items: baseline;
+      gap: 4px;
+    }
+
+    .stat-value small {
+      font-size: 0.75rem;
+      color: var(--text-dark);
+      font-family: var(--font-sans);
+    }
+
+    /* Overall Progress Bar */
+    .progress-bar-container {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 14px 18px;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .progress-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      font-size: 0.8rem;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .progress-meta {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      color: var(--text-muted);
+      flex-wrap: wrap;
+    }
+
+    .progress-track {
+      height: 8px;
+      background: var(--bg-surface);
+      border-radius: 4px;
+      overflow: hidden;
+      display: flex;
+      position: relative;
+    }
+
+    .progress-segment-correct {
+      height: 100%;
+      background: var(--accent-emerald);
+      transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .progress-segment-incorrect {
+      height: 100%;
+      background: var(--accent-rose);
+      transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Filter Toolbar */
+    .filter-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      background: rgba(17, 24, 39, 0.6);
+      padding: 8px 12px;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .filter-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .filter-btn {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-muted);
+      font-size: 0.82rem;
+      font-weight: 600;
+      padding: 6px 14px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .filter-btn:hover {
+      background: var(--bg-surface);
+      color: var(--text-main);
+    }
+
+    .filter-btn.active {
+      background: var(--bg-surface);
+      border-color: var(--accent-blue);
+      color: var(--text-main);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+    }
+
+    .filter-count {
+      background: rgba(255, 255, 255, 0.08);
+      font-size: 0.7rem;
+      font-family: var(--font-mono);
+      padding: 1px 6px;
+      border-radius: 10px;
+    }
+
+    .filter-btn.active .filter-count {
+      background: var(--accent-blue);
+      color: #fff;
+    }
+
+    .filter-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .btn-action-outline {
+      background: transparent;
+      border: 1px solid var(--border-light);
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      font-weight: 500;
+      padding: 6px 14px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .btn-action-outline:hover {
+      background: var(--bg-surface);
+      color: var(--text-main);
+      border-color: var(--text-muted);
+    }
+
+    .btn-action-outline.btn-amber {
+      border-color: rgba(245, 158, 11, 0.3);
+      color: var(--accent-amber);
+    }
+
+    .btn-action-outline.btn-amber:hover {
+      background: rgba(245, 158, 11, 0.1);
+      border-color: var(--accent-amber);
+    }
+
+    /* Content Layout (Focus Mode: Question Card + Grid Sidebar) */
+    .exam-layout {
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      gap: 24px;
+      align-items: start;
+    }
+
+    @media (max-width: 1024px) {
+      .exam-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Question Card Styling */
+    .question-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-xl);
+      padding: 28px;
+      box-shadow: var(--shadow-lg);
+      position: relative;
+      transition: border-color 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .question-card:hover {
+      border-color: var(--border-light);
+    }
+
+    .question-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .question-tags {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .tag-category {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 4px 10px;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .tag-teoria {
+      background: rgba(6, 182, 212, 0.12);
+      color: var(--accent-cyan);
+      border: 1px solid rgba(6, 182, 212, 0.25);
+    }
+
+    .tag-implementacion {
+      background: rgba(139, 92, 246, 0.15);
+      color: #c084fc;
+      border: 1px solid rgba(139, 92, 246, 0.3);
+    }
+
+    .tag-casos {
+      background: rgba(245, 158, 11, 0.12);
+      color: var(--accent-amber);
+      border: 1px solid rgba(245, 158, 11, 0.25);
+    }
+
+    .tag-id {
+      background: var(--bg-surface);
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      padding: 4px 8px;
+      border-radius: 6px;
+      border: 1px solid var(--border-subtle);
+    }
+
+    .question-status-badge {
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+
+    .status-unanswered {
+      background: rgba(148, 163, 184, 0.1);
+      color: var(--text-dark);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .status-correct {
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--accent-emerald);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .status-incorrect {
+      background: rgba(244, 63, 94, 0.15);
+      color: var(--accent-rose);
+      border: 1px solid rgba(244, 63, 94, 0.3);
+    }
+
+    .question-prompt {
+      font-size: 1.12rem;
+      font-weight: 600;
+      line-height: 1.6;
+      color: var(--text-main);
+      margin-bottom: 24px;
+    }
+
+    .prompt-highlight {
+      color: #38bdf8;
+      font-weight: 700;
+    }
+
+    /* Options List */
+    .options-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .option-btn {
+      background: var(--bg-surface);
+      border: 1.5px solid var(--border-light);
+      border-radius: var(--radius-md);
+      padding: 16px 20px;
+      color: var(--text-main);
+      text-align: left;
+      font-family: inherit;
+      font-size: 0.95rem;
+      cursor: pointer;
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      outline: none;
+    }
+
+    .option-btn:hover:not(:disabled) {
+      background: var(--bg-card-hover);
+      border-color: var(--accent-blue);
+      transform: translateX(4px);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+    }
+
+    .option-btn:disabled {
+      cursor: default;
+    }
+
+    .option-letter {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.06);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.82rem;
+      font-family: var(--font-mono);
+      flex-shrink: 0;
+      color: var(--text-muted);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      transition: all 0.2s ease;
+    }
+
+    .option-text {
+      flex: 1;
+      padding-top: 2px;
+      line-height: 1.5;
+    }
+
+    .option-tag-status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .badge-correct-indicator {
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: rgba(16, 185, 129, 0.2);
+      color: var(--accent-emerald);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+    }
+
+    .option-btn.state-correct {
+      background: rgba(16, 185, 129, 0.12) !important;
+      border-color: var(--accent-emerald) !important;
+      box-shadow: 0 0 15px var(--accent-emerald-glow) !important;
+    }
+
+    .option-btn.state-correct .option-letter {
+      background: var(--accent-emerald);
+      color: #0b0f19;
+      border-color: var(--accent-emerald);
+    }
+
+    .option-btn.state-incorrect {
+      background: rgba(244, 63, 94, 0.12) !important;
+      border-color: var(--accent-rose) !important;
+      box-shadow: 0 0 15px var(--accent-rose-glow) !important;
+    }
+
+    .option-btn.state-incorrect .option-letter {
+      background: var(--accent-rose);
+      color: #fff;
+      border-color: var(--accent-rose);
+    }
+
+    .option-btn.state-highlight-correct {
+      background: rgba(16, 185, 129, 0.09) !important;
+      border-color: var(--accent-emerald) !important;
+      border-style: dashed !important;
+    }
+
+    .option-btn.state-highlight-correct .option-letter {
+      background: rgba(16, 185, 129, 0.25);
+      color: var(--accent-emerald);
+      border-color: var(--accent-emerald);
+    }
+
+    .option-btn.state-faded {
+      opacity: 0.55;
+    }
+
+    /* Justification Box */
+    .justification-box {
+      margin-top: 24px;
+      background: linear-gradient(145deg, #131c2e, #0e1726);
+      border: 1px solid #1e3a5f;
+      border-left: 4px solid var(--accent-cyan);
+      border-radius: var(--radius-md);
+      padding: 18px 20px;
+      animation: slideDown 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .justification-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+
+    .justification-badge {
+      background: rgba(6, 182, 212, 0.15);
+      color: var(--accent-cyan);
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 4px;
+      border: 1px solid rgba(6, 182, 212, 0.3);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .justification-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #e2e8f0;
+      letter-spacing: -0.01em;
+    }
+
+    .justification-body {
+      color: #cbd5e1;
+      font-size: 0.92rem;
+      line-height: 1.6;
+    }
+
+    /* Navigation Footer for Question */
+    .card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 28px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border-subtle);
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .btn-nav {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-light);
+      color: var(--text-main);
+      font-size: 0.85rem;
+      font-weight: 600;
+      padding: 10px 18px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .btn-nav:hover:not(:disabled) {
+      background: var(--bg-surface-elevated);
+      border-color: var(--text-muted);
+    }
+
+    .btn-nav:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .btn-nav-primary {
+      background: linear-gradient(135deg, #0ea5e9, #3b82f6);
+      border-color: transparent;
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
+    }
+
+    .btn-nav-primary:hover:not(:disabled) {
+      background: linear-gradient(135deg, #0284c7, #2563eb);
+      box-shadow: 0 6px 16px rgba(14, 165, 233, 0.45);
+    }
+
+    .btn-finish-exam {
+      background: linear-gradient(135deg, #10b981, #059669);
+      border-color: transparent;
+      color: #fff;
+      font-weight: 700;
+      padding: 8px 16px;
+      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+      cursor: pointer;
+      border-radius: var(--radius-sm);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+      transition: all 0.2s ease;
+    }
+
+    .btn-finish-exam:hover {
+      background: linear-gradient(135deg, #059669, #047857);
+      box-shadow: 0 6px 18px rgba(16, 185, 129, 0.5);
+    }
+
+    /* Sidebar Navigator Palette */
+    .sidebar-panel {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-xl);
+      padding: 20px;
+      box-shadow: var(--shadow-md);
+      position: sticky;
+      top: 90px;
+    }
+
+    .sidebar-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .question-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-bottom: 20px;
+      max-height: 320px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .grid-btn {
+      aspect-ratio: 1;
+      border-radius: var(--radius-sm);
+      background: var(--bg-surface);
+      border: 1px solid var(--border-light);
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      font-weight: 700;
+      font-size: 0.82rem;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      transition: all 0.2s ease;
+    }
+
+    .grid-btn:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--text-muted);
+      color: var(--text-main);
+    }
+
+    .grid-btn.current {
+      outline: 2px solid var(--accent-cyan);
+      outline-offset: 2px;
+      color: #fff;
+    }
+
+    .grid-btn.correct {
+      background: rgba(16, 185, 129, 0.2);
+      border-color: var(--accent-emerald);
+      color: var(--accent-emerald);
+    }
+
+    .grid-btn.incorrect {
+      background: rgba(244, 63, 94, 0.2);
+      border-color: var(--accent-rose);
+      color: var(--accent-rose);
+    }
+
+    .grid-legend {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      padding-top: 14px;
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .legend-indicator {
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+    }
+
+    .list-view-container {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    /* Modal Resumen Final de Auditoría */
+    .modal-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .modal-backdrop.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-dialog {
+      background: var(--bg-card);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-xl);
+      max-width: 760px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
+      transform: scale(0.95);
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .modal-backdrop.show .modal-dialog {
+      transform: scale(1);
+    }
+
+    .modal-header-banner {
+      background: linear-gradient(135deg, #0f172a, #1e293b);
+      padding: 30px;
+      text-align: center;
+      border-bottom: 1px solid var(--border-subtle);
+      position: relative;
+    }
+
+    .verdict-stamp {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.8rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 6px 16px;
+      border-radius: 30px;
+      margin-bottom: 16px;
+    }
+
+    .verdict-pass {
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--accent-emerald);
+      border: 1px solid var(--accent-emerald);
+      box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
+    }
+
+    .verdict-fail {
+      background: rgba(244, 63, 94, 0.15);
+      color: var(--accent-rose);
+      border: 1px solid var(--accent-rose);
+      box-shadow: 0 0 20px rgba(244, 63, 94, 0.2);
+    }
+
+    .score-circle-wrapper {
+      display: flex;
+      justify-content: center;
+      align-items: baseline;
+      gap: 6px;
+      margin: 10px 0;
+    }
+
+    .big-score {
+      font-size: 4rem;
+      font-weight: 800;
+      font-family: var(--font-mono);
+      line-height: 1;
+    }
+
+    .big-scale {
+      font-size: 1.5rem;
+      color: var(--text-dark);
+      font-weight: 600;
+    }
+
+    .modal-body {
+      padding: 24px 30px;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    @media (max-width: 600px) {
+      .summary-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .summary-box {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 12px 14px;
+      text-align: center;
+    }
+
+    .summary-box-title {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+    }
+
+    .summary-box-val {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-top: 4px;
+      font-family: var(--font-mono);
+    }
+
+    .audit-feedback-section {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 16px 20px;
+      margin-bottom: 24px;
+    }
+
+    .audit-feedback-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: var(--accent-cyan);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .audit-feedback-text {
+      font-size: 0.88rem;
+      line-height: 1.6;
+      color: #cbd5e1;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      padding: 16px 30px;
+      background: var(--bg-surface);
+      border-top: 1px solid var(--border-subtle);
+      flex-wrap: wrap;
+    }
+
+    .keyboard-hint {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      color: var(--text-dark);
+      font-size: 0.7rem;
+    }
+
+    .kbd {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 4px;
+      padding: 2px 6px;
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      color: var(--text-muted);
+    }
+
+    @media print {
+      body {
+        background: #fff !important;
+        color: #000 !important;
+      }
+      body::before, header, .topic-banner, .nav-actions, .filter-bar, .sidebar-panel, .card-footer, .btn-action-outline, .modal-backdrop {
+        display: none !important;
+      }
+      .question-card {
+        border: 1px solid #ccc !important;
+        background: #fff !important;
+        color: #000 !important;
+        box-shadow: none !important;
+        page-break-inside: avoid;
+        margin-bottom: 20px;
+      }
+      .option-btn {
+        background: #f9f9f9 !important;
+        color: #000 !important;
+        border: 1px solid #ddd !important;
+      }
+      .justification-box {
+        background: #f0fdf4 !important;
+        border: 1px solid #86efac !important;
+        color: #000 !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Topic Selector Navigation Banner -->
+  <div class="topic-banner">
+    <div style="display:flex; align-items:center; gap:8px;">
+      <span style="font-size: 0.72rem; text-transform:uppercase; font-weight:700; letter-spacing:0.06em; color:var(--text-muted);">
+        Módulos Parcial:
+      </span>
+      <div class="topic-pills">
+        <button class="topic-pill-btn active" id="btnTopicT7" onclick="switchTopic('tema07')">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+          Tema 07: Controles Anexo A (12)
+        </button>
+        <button class="topic-pill-btn" id="btnTopicT8" onclick="switchTopic('tema08')">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+          Tema 08: Guías Anexo B (12)
+        </button>
+        <button class="topic-pill-btn" id="btnTopicT9" onclick="switchTopic('tema09')">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+          Tema 09: ISO 29100 Anexo C (12)
+        </button>
+        <button class="topic-pill-btn" id="btnTopicT10" onclick="switchTopic('tema10')">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+          Tema 10: GDPR / SoftExpert (12)
+        </button>
+        <button class="topic-pill-btn" id="btnTopicT11" onclick="switchTopic('tema11')">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>
+          Tema 11: ISO 27018 & 29151 (12)
+        </button>
+        <button class="topic-pill-btn" id="btnTopicAll" onclick="switchTopic('ambos')">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          Simulador Integral Temas 07 al 11 (60)
+        </button>
+      </div>
+    </div>
+
+    <div style="display:flex; flex-wrap:wrap; gap:8px;">
+      <a href="index.html" style="font-size:0.75rem; color:var(--accent-cyan); text-decoration:none; display:inline-flex; align-items:center; gap:4px; margin-right:8px;">
+        <span>Hub Principal</span>
+      </a>
+      <a href="bloque1.html" style="font-size:0.75rem; color:#38bdf8; text-decoration:none; display:inline-flex; align-items:center; gap:4px; margin-right:8px;">
+        <span>Bloque 1</span>
+      </a>
+      <a href="bloque2.html" style="font-size:0.75rem; color:#34d399; text-decoration:none; display:inline-flex; align-items:center; gap:4px; margin-right:8px;">
+        <span>Bloque 2</span>
+      </a>
+      <a href="bloque3.html" style="font-size:0.75rem; color:#c084fc; text-decoration:none; display:inline-flex; align-items:center; gap:4px; margin-right:8px;">
+        <span>Bloque 3</span>
+      </a>
+      <a href="bloque4.html" style="font-size:0.75rem; color:#60a5fa; text-decoration:none; display:inline-flex; align-items:center; gap:4px; margin-right:8px;">
+        <span>Bloque 4</span>
+      </a>
+      <a href="bloque5.html" style="font-size:0.75rem; color:#22d3ee; text-decoration:none; display:inline-flex; align-items:center; gap:4px;">
+        <span>Bloque 5</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Top Navigation Header -->
+  <header>
+    <div class="nav-container">
+      <div class="brand">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            <path d="m9 12 2 2 4-4"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h1>
+            AUDIT-SIM // PIMS
+            <span class="brand-badge" id="headerStandardBadge">ISO/IEC 27701:2025</span>
+          </h1>
+          <p id="headerSubtitle">Simulador de Examen Parcial — Auditoría de Sistemas (8vo Ciclo FIIS)</p>
+        </div>
+      </div>
+
+      <div class="nav-actions">
+        <!-- View Mode Switch -->
+        <div class="view-toggle">
+          <button class="view-toggle-btn active" id="btnModeFocus" onclick="setViewMode('focus')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/></svg>
+            Modo Examen
+          </button>
+          <button class="view-toggle-btn" id="btnModeList" onclick="setViewMode('list')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+            Lista Completa
+          </button>
+        </div>
+
+        <!-- Timer -->
+        <div class="timer-pill" title="Tiempo de sesión de examen">
+          <span class="dot"></span>
+          <span id="examTimer">00:00</span>
+        </div>
+
+        <!-- Sound FX toggle -->
+        <button class="btn-icon-toggle" id="btnSoundToggle" onclick="toggleSound()" title="Efectos de sonido (Activar/Desactivar)">
+          <svg id="soundIconOn" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+          </svg>
+          <svg id="soundIconOff" style="display:none;" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="1" y1="1" x2="23" y2="23"></line>
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <line x1="23" y1="9" x2="17" y2="15"></line>
+            <line x1="17" y1="9" x2="23" y2="15"></line>
+          </svg>
+        </button>
+
+        <!-- Final Report Button -->
+        <button class="btn-finish-exam" onclick="openReportModal()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          Dictamen Final
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Body -->
+  <main>
+    <!-- Top Statistics Dashboard -->
+    <div class="dashboard-header">
+      <div class="stats-ribbon">
+        <div class="stat-card stat-progress">
+          <div class="stat-label">
+            <span>Progreso</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          </div>
+          <div class="stat-value">
+            <span id="statAnswered">0</span><small>/ <span id="statTotalQ">12</span></small>
+          </div>
+        </div>
+
+        <div class="stat-card stat-correct">
+          <div class="stat-label">
+            <span>Conformidades (Aciertos)</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <div class="stat-value" style="color: var(--accent-emerald);">
+            <span id="statCorrect">0</span>
+          </div>
+        </div>
+
+        <div class="stat-card stat-incorrect">
+          <div class="stat-label">
+            <span>No Conformidades (Fallos)</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </div>
+          <div class="stat-value" style="color: var(--accent-rose);">
+            <span id="statIncorrect">0</span>
+          </div>
+        </div>
+
+        <div class="stat-card stat-score">
+          <div class="stat-label">
+            <span>Nota Vigesimal (0-20)</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          </div>
+          <div class="stat-value" style="color: #c084fc;">
+            <span id="statGrade">0.0</span><small>/ 20</small>
+          </div>
+        </div>
+      </div>
+
+      <!-- Module Meta -->
+      <div style="text-align: right; font-size: 0.8rem; color: var(--text-muted);">
+        <div id="lblCurrentTopicHeader">Módulo: <strong>Tema 07 — Anexo A (ISO/IEC 27701:2025)</strong></div>
+        <div style="margin-top: 4px;">Criterio Aprobatorio: <strong>≥ 14.0 pts (70%)</strong></div>
+      </div>
+    </div>
+
+    <!-- Live Overall Progress Track -->
+    <div class="progress-bar-container">
+      <div class="progress-header">
+        <span style="font-weight: 600; color: var(--text-muted); display:flex; align-items:center; gap:6px;">
+          <span>Avance de Auditoría:</span>
+          <span id="progressPercent" style="color: var(--text-main); font-family: var(--font-mono); font-weight: 700;">0%</span>
+        </span>
+        <div class="progress-meta">
+          <span style="color: var(--accent-emerald);">● Aciertos: <strong id="lblCorrectCount">0</strong></span>
+          <span style="color: var(--accent-rose);">● Errores: <strong id="lblIncorrectCount">0</strong></span>
+          <span style="color: var(--text-dark);">○ Pendientes: <strong id="lblPendingCount">12</strong></span>
+        </div>
+      </div>
+      <div class="progress-track">
+        <div class="progress-segment-correct" id="barCorrect" style="width: 0%;"></div>
+        <div class="progress-segment-incorrect" id="barIncorrect" style="width: 0%;"></div>
+      </div>
+    </div>
+
+    <!-- Dynamic Filter Buttons Bar -->
+    <div class="filter-bar">
+      <div class="filter-group" id="filterButtonGroup">
+        <!-- Rendered dynamically depending on topic -->
+      </div>
+
+      <div class="filter-actions">
+        <button class="btn-action-outline btn-amber" id="btnRetryWrong" onclick="retryIncorrectOnly()" style="display:none;" title="Reintentar solo las preguntas que fallaste">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+          Reintentar No Conformidades (<span id="lblWrongBtnCount">0</span>)
+        </button>
+        <button class="btn-action-outline" onclick="resetExam()" title="Reiniciar todas las respuestas">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
+          Reiniciar Todo
+        </button>
+      </div>
+    </div>
+
+    <!-- View Mode: FOCUS MODE (One Question + Sidebar Navigator) -->
+    <div id="focusViewLayout" class="exam-layout">
+      <!-- Question Card Container -->
+      <div id="singleQuestionArea">
+        <!-- Rendered Dynamically -->
+      </div>
+
+      <!-- Sidebar Question Palette -->
+      <aside class="sidebar-panel">
+        <div class="sidebar-title">
+          <span>Navegación del Auditor</span>
+          <span class="keyboard-hint">
+            <span class="kbd">←</span> <span class="kbd">→</span>
+          </span>
+        </div>
+
+        <div class="question-grid" id="questionGridNav">
+          <!-- Buttons Generated Dynamically -->
+        </div>
+
+        <div class="grid-legend">
+          <div class="legend-item">
+            <span class="legend-indicator" style="background: rgba(16, 185, 129, 0.4); border: 1px solid var(--accent-emerald);"></span>
+            <span>Conforme (Acierto)</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-indicator" style="background: rgba(244, 63, 94, 0.4); border: 1px solid var(--accent-rose);"></span>
+            <span>No Conformidad (Fallo)</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-indicator" style="background: var(--bg-surface); border: 1px solid var(--border-light);"></span>
+            <span>Pendiente de evaluación</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-indicator" style="border: 2px solid var(--accent-cyan); background: transparent;"></span>
+            <span>Pregunta actual en pantalla</span>
+          </div>
+        </div>
+
+        <div style="margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border-subtle); font-size: 0.75rem; color: var(--text-dark);">
+          <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+            <span>Atajos de teclado:</span>
+            <span><span class="kbd">A</span> <span class="kbd">B</span> <span class="kbd">C</span> <span class="kbd">D</span></span>
+          </div>
+          <p>Usa teclas numéricas o letras para responder al instante, y flechas para desplazarte.</p>
+        </div>
+      </aside>
+    </div>
+
+    <!-- View Mode: LIST VIEW (All questions in a vertical list) -->
+    <div id="listViewLayout" class="list-view-container" style="display: none;">
+      <!-- All Question Cards Rendered Dynamically -->
+    </div>
+  </main>
+
+  <!-- Modal Dictamen de Auditoría (Resumen Final) -->
+  <div class="modal-backdrop" id="reportModal">
+    <div class="modal-dialog">
+      <div class="modal-header-banner">
+        <div id="verdictStamp" class="verdict-stamp verdict-pass"></div>
+        <h2 style="font-size: 1.45rem; font-weight: 800; margin-bottom: 6px; letter-spacing: -0.01em;">
+          INFORME DE DICTAMEN DE AUDITORÍA
+        </h2>
+        <p style="font-size: 0.85rem; color: var(--text-muted);" id="modalSubtitle">
+          Evaluación de Competencia Técnica en ISO/IEC 27701:2025 (PIMS) — VIII Ciclo
+        </p>
+
+        <div class="score-circle-wrapper">
+          <span class="big-score" id="modalFinalGrade">0.0</span>
+          <span class="big-scale">/ 20</span>
+        </div>
+        <div style="font-family: var(--font-mono); font-size: 0.95rem; color: var(--accent-cyan);" id="modalFinalPercent">
+          0% de efectividad auditora
+        </div>
+      </div>
+
+      <div class="modal-body">
+        <div class="summary-grid">
+          <div class="summary-box">
+            <div class="summary-box-title">Conformidades</div>
+            <div class="summary-box-val" style="color: var(--accent-emerald);" id="modalCountCorrect">0 / 12</div>
+          </div>
+          <div class="summary-box">
+            <div class="summary-box-title">No Conformidades</div>
+            <div class="summary-box-val" style="color: var(--accent-rose);" id="modalCountIncorrect">0 / 12</div>
+          </div>
+          <div class="summary-box">
+            <div class="summary-box-title">Tiempo Invertido</div>
+            <div class="summary-box-val" style="color: var(--accent-cyan);" id="modalTimeSpent">00:00</div>
+          </div>
+        </div>
+
+        <div class="audit-feedback-section">
+          <div class="audit-feedback-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            <span>Conclusión y Dictamen Técnico del Auditor Líder</span>
+          </div>
+          <p class="audit-feedback-text" id="modalVerdictText"></p>
+        </div>
+
+        <div style="background: var(--bg-surface); border-radius: var(--radius-md); padding: 14px 18px; border: 1px solid var(--border-subtle);">
+          <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 10px;">
+            Desglose por Dominio Normativo Evaluado
+          </div>
+          <div id="modalDomainBreakdown" style="display:flex; flex-direction:column; gap:8px; font-size: 0.85rem;"></div>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-action-outline" onclick="window.print()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          Imprimir Dictamen
+        </button>
+        <button class="btn-action-outline" onclick="closeReportModal()">
+          Revisar Preguntas
+        </button>
+        <button class="btn-finish-exam" onclick="resetExam(); closeReportModal();">
+          Reintentar Todo
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /**
+     * BANCO DE PREGUNTAS TEMA 07: ANEXO A (ISO/IEC 27701:2025)
+     */
+    const questionsTema07 = [
+      {
+        id: 1,
+        topic: "Tema 07",
+        category: "Teoría Normativa",
+        question: "De acuerdo con la cláusula 4.1 de la norma ISO/IEC 27701:2025, ¿cuál es el requisito obligatorio cuando una misma organización actúa simultáneamente como responsable (PII Controller) y como encargado (PII Processor)?",
+        options: [
+          "A) Debe unificar todos los controles en un único inventario bajo la figura exclusiva de PII Controller.",
+          "B) Debe determinar roles separados, cada uno de los cuales estará sujeto a un conjunto independiente de controles.",
+          "C) Debe delegar la responsabilidad del tratamiento a un tercero mediante una cláusula de exoneración en el SoA.",
+          "D) Debe aplicar únicamente los controles de seguridad comunes especificados en la Tabla A.3."
+        ],
+        correct: 1,
+        justification: "Cláusula 4.1: 'Where the organization acts in both roles (i.e. a PII controller and a PII processor), separate roles shall be determined, each of which is the subject of a separate set of controls'."
+      },
+      {
+        id: 2,
+        topic: "Tema 07",
+        category: "Teoría Normativa",
+        question: "Respecto a la Declaración de Aplicabilidad (Statement of Applicability - SoA) descrita en la cláusula 6.1.3 e), ¿cuál es el criterio formal para excluir controles del Anexo A?",
+        options: [
+          "A) Todos los controles del Anexo A pueden excluirse libremente sin necesidad de registrar justificación documental.",
+          "B) Por defecto ningún control puede excluirse; el estándar prohíbe exclusiones en certificaciones PIMS.",
+          "C) Todos los controles se asumen pertinentes por defecto; cualquier exclusión debe justificarse formalmente si no es necesaria según la evaluación de riesgos o por excepciones legales aplicables.",
+          "D) Solo se permite excluir controles de la Tabla A.3 si la empresa no cuenta con certificación previa en ISO/IEC 27001."
+        ],
+        correct: 2,
+        justification: "Cláusula 6.1.3 e): El SoA debe incluir la justificación para excluir cualquier control del Anexo A (por ejemplo, si no son necesarios según la evaluación de riesgos o están sujetos a excepciones legales)."
+      },
+      {
+        id: 3,
+        topic: "Tema 07",
+        category: "Teoría Normativa",
+        question: "Bajo la Tabla A.1 (Controles para PII Controllers), ¿qué condiciones acumulativas exige el estándar para validar y registrar el consentimiento del titular (PII Principal) según A.1.2.4 y A.1.2.5?",
+        options: [
+          "A) Debe obtenerse tácitamente al momento de aceptar los términos y condiciones de navegación web.",
+          "B) Debe ser otorgado libremente, ser específico respecto a la finalidad, inequívoco y explícito, manteniendo registro verificable de cuándo y cómo se obtuvo.",
+          "C) Es obligatorio únicamente en contratos laborales, excluyéndose de transacciones comerciales electrónicas.",
+          "D) Solo es válido si es ratificado anualmente ante la autoridad de supervisión de protección de datos."
+        ],
+        correct: 1,
+        justification: "Controles A.1.2.4 y A.1.2.5 (complementados por B.1.2.5): El consentimiento debe ser 'freely given, specific regarding the purpose for processing, and unambiguous and explicit', con registros de soporte verificables."
+      },
+      {
+        id: 4,
+        topic: "Tema 07",
+        category: "Teoría Normativa",
+        question: "Según el control A.2.2.4 de la Tabla A.2, ¿cuál es la restricción expresa impuesta al Encargado del Tratamiento (PII Processor) respecto al uso de PII para fines comerciales?",
+        options: [
+          "A) Puede utilizar la PII para marketing interno siempre que los datos estén cifrados en reposo.",
+          "B) No debe usar la PII para marketing o publicidad sin consentimiento previo y expreso del titular, ni condicionar la prestación del servicio a dicho consentimiento.",
+          "C) Tiene autorización legal tácita para perfilar a los usuarios si el cliente no lo prohíbe explícitamente en el contrato.",
+          "D) Puede monetizar metadatos y registros de navegación sin autorización siempre que se aplique seudonimización."
+        ],
+        correct: 1,
+        justification: "Control A.2.2.4 (Marketing and advertising use): 'The organization shall not use PII processed under a contract for the purposes of marketing and advertising without establishing that prior consent was obtained... and shall not make providing such consent a condition for receiving the service'."
+      },
+      {
+        id: 5,
+        topic: "Tema 07",
+        category: "Teoría Normativa",
+        question: "Al momento de culminar o rescindir un contrato de servicios, ¿qué obligación estricta le impone el control A.2.4.3 al Procesador de PII (PII Processor)?",
+        options: [
+          "A) Retener una copia completa de la base de datos de clientes durante 10 años para fines de auditoría interna.",
+          "B) Transferir la propiedad intelectual de la infraestructura de procesamiento al cliente.",
+          "C) Estar en capacidad de devolver, transferir o destruir de forma segura la PII, poniendo su política formal a disposición del cliente.",
+          "D) Publicar los registros de borrado en el diario oficial de la jurisdicción correspondiente."
+        ],
+        correct: 2,
+        justification: "Control A.2.4.3 (Return, transfer or disposal of PII): 'The organization shall be able to return, transfer or dispose of PII in a secure manner. It shall also make its policy available to the customer'."
+      },
+      {
+        id: 6,
+        topic: "Tema 07",
+        category: "Teoría Normativa",
+        question: "En la Tabla A.3 (Controles de Seguridad para Controllers y Processors), ¿cuál es el mandato normativo sobre los datos de prueba establecido en el control A.3.31?",
+        options: [
+          "A) La PII real en entornos de prueba solo requiere ofuscación básica de los primeros tres caracteres del identificador.",
+          "B) No se debe usar PII real para pruebas; se debe emplear información falsa o sintética. Si fuera inevitable, deben implementarse controles equivalentes a producción respaldados por gestión de riesgos.",
+          "C) Se permite el uso de respaldos de producción sin restricciones siempre que el servidor de QA no tenga salida a Internet.",
+          "D) Las pruebas de carga y estrés son las únicas exentas de aplicar medidas de protección de PII."
+        ],
+        correct: 1,
+        justification: "Control A.3.31 y B.3.31 (Test information): 'PII should not be used for testing purposes; false or synthetic PII should be used. Where the use of PII for testing purposes cannot be avoided, technical and organizational measures equivalent to those used in the production environment should be implemented'."
+      },
+      {
+        id: 7,
+        topic: "Tema 07",
+        category: "Casos Prácticos de Auditoría",
+        question: "CASO 1: Un banco decide implementar un modelo de scoring automatizado con Inteligencia Artificial que aprueba o deniega créditos hipotecarios en segundos sin intervención de asesores. En la auditoría de certificación PIMS, ¿qué control de la Tabla A.1 verificará prioritariamente el auditor para evaluar la gestión previa del riesgo sobre los titulares?",
+        options: [
+          "A) A.1.4.7 (Eliminación de archivos temporales).",
+          "B) A.1.2.6 (Privacy Impact Assessment - PIA).",
+          "C) A.1.4.10 (Controles de transmisión de PII).",
+          "D) A.1.5.3 (Países y organizaciones receptoras de PII)."
+        ],
+        correct: 1,
+        justification: "Control A.1.2.6 (Privacy impact assessment): Obliga a evaluar la necesidad e implementar un PIA ante nuevos tratamientos que generen riesgos relevantes para los PII Principals, específicamente ante decisiones automatizadas con efectos legales significativos."
+      },
+      {
+        id: 8,
+        topic: "Tema 07",
+        category: "Casos Prácticos de Auditoría",
+        question: "CASO 2: Una empresa proveedora de software SaaS de planillas (Processor) recibe una instrucción formal por correo de su cliente corporativo para que le envíe copias de nóminas de empleados sin implementar canales seguros de cifrado. El auditor detecta que el proveedor ejecutó la orden sin objetar. ¿Qué control del Anexo A vulneró directamente el Processor?",
+        options: [
+          "A) A.2.2.5 (Infringing instruction / Deber de advertencia ante instrucciones ilegales o infractoras).",
+          "B) A.2.4.2 (Gestión de archivos temporales de nómina).",
+          "C) A.2.5.7 (Divulgación previa de subcontratistas).",
+          "D) A.2.3.2 (Mecanismos para corregir datos del trabajador)."
+        ],
+        correct: 0,
+        justification: "Control A.2.2.5 (Infringing instruction): 'The organization shall inform the customer if, in its opinion, a processing instruction infringes applicable legal requirements'."
+      },
+      {
+        id: 9,
+        topic: "Tema 07",
+        category: "Casos Prácticos de Auditoría",
+        question: "CASO 3: Un eCommerce almacena indefinidamente las compras, direcciones y números de tarjeta de crédito de usuarios inactivos desde hace 8 años alegando que 'algún día podrían volver a comprar'. Como auditor líder, ¿qué no conformidad clasificarías bajo la Tabla A.1?",
+        options: [
+          "A) Incumplimiento del control A.1.3.11 sobre decisiones automatizadas.",
+          "B) Incumplimiento del control A.1.4.8 (Retention / Retención de PII) y A.1.4.3 (Limitación del tratamiento).",
+          "C) Incumplimiento del control A.1.5.4 (Registro de transferencias transfronterizas).",
+          "D) Incumplimiento del control A.1.2.8 (Acuerdos entre co-controladores)."
+        ],
+        correct: 1,
+        justification: "Control A.1.4.8 (Retention): Establece que 'The organization shall not retain PII for longer than is necessary for the purposes for which the PII is processed', complementado por A.1.4.3 (Limit processing)."
+      },
+      {
+        id: 10,
+        topic: "Tema 07",
+        category: "Casos Prácticos de Auditoría",
+        question: "CASO 4: Un proveedor de servicios de infraestructura cloud (Processor) migra los servidores de base de datos de un hospital hacia un nuevo proveedor de data centers en Europa sin avisar al hospital cliente hasta dos meses después de ejecutada la migración. ¿Qué control de la Tabla A.2 se ha infringido flagrantemente?",
+        options: [
+          "A) A.2.2.2 (Customer agreement).",
+          "B) A.2.5.9 (Change of subcontractor to process PII).",
+          "C) A.2.4.4 (PII transmission controls).",
+          "D) A.2.2.7 (Records related to processing PII)."
+        ],
+        correct: 1,
+        justification: "Control A.2.5.9: 'The organization shall... inform the customer of any intended changes concerning the addition or replacement of subcontractors to process PII, thereby giving the customer the opportunity to object to such changes'."
+      },
+      {
+        id: 11,
+        topic: "Tema 07",
+        category: "Casos Prácticos de Auditoría",
+        question: "CASO 5: Durante una auditoría a un sistema hospitalario, el auditor descubre que una tabla de base de datos guarda millones de registros médicos y de diagnósticos clínicos clasificados como información de acceso público interno, permitiendo que cualquier practicante de TI los consulte sin autenticación estricta. ¿Qué conjunto de controles de la Tabla A.3 fueron vulnerados?",
+        options: [
+          "A) A.3.5 (Classification of information), A.3.9 (Access rights) y A.3.23 (Secure authentication).",
+          "B) A.3.18 (Acuerdos de confidencialidad) y A.3.19 (Política de escritorio limpio).",
+          "C) A.3.30 (Desarrollo tercerizado) y A.3.20 (Soportes de almacenamiento).",
+          "D) A.3.10 (Acuerdos con proveedores) y A.3.14 (Protección de registros)."
+        ],
+        correct: 0,
+        justification: "A.3.5 exige clasificar la información considerando PII (especialmente categorías sensibles de salud), A.3.9 restringe derechos de acceso según política y perfiles, y A.3.23 obliga a implementar mecanismos de autenticación segura."
+      },
+      {
+        id: 12,
+        topic: "Tema 07",
+        category: "Casos Prácticos de Auditoría",
+        question: "CASO 6: Una aplicación de delivery sufrió una fuga de datos donde se filtraron direcciones y números telefónicos de 100,000 clientes. El equipo de TI mitigó el fallo en el servidor pero nunca documentó el número de usuarios comprometidos, no registró la fecha del incidente ni notificó a la autoridad o a los titulares. ¿Qué control de la Tabla A.3 no se cumplió?",
+        options: [
+          "A) A.3.26 (Use of cryptography).",
+          "B) A.3.12 (Response to information security incidents / Registro formal de brechas y notificaciones).",
+          "C) A.3.22 (User endpoint devices).",
+          "D) A.3.8 (Identity management)."
+        ],
+        correct: 1,
+        justification: "Control A.3.12 y directriz B.3.12: Ante brechas de PII, se debe mantener un registro formal detallado (consecuencias, personas afectadas, datos comprometidos, medidas correctivas) y ejecutar los protocolos de notificación legal correspondientes."
+      }
+    ];
+
+    /**
+     * BANCO DE PREGUNTAS TEMA 08: ANEXO B (ISO/IEC 27701:2025)
+     */
+    const questionsTema08 = [
+      {
+        id: 13,
+        topic: "Tema 08",
+        category: "Teoría de Implementación",
+        question: "De acuerdo con la directriz de implementación B.1.3.2 y B.1.3.5 para Responsables (PII Controllers), ¿qué principio de paridad debe cumplirse al poner a disposición los canales para ejercer derechos o retirar el consentimiento?",
+        options: [
+          "A) Las solicitudes de revocación solo son válidas si se realizan presencialmente con firma notarial.",
+          "B) El medio para retirar o modificar el consentimiento debe ser consistente con el mecanismo usado para recopilarlo (ej. si se recopiló vía web o correo, la revocación debe estar disponible por esa misma vía y no forzar medios como fax o llamadas).",
+          "C) La organización puede cobrar una tarifa administrativa estándar previa para tramitar cualquier retiro de consentimiento digital.",
+          "D) La revocación debe tramitarse exclusivamente a través de la mesa de partes virtual de la Autoridad Nacional de Protección de Datos."
+        ],
+        correct: 1,
+        justification: "Cláusulas B.1.3.2 y B.1.3.5: 'The mechanism used for withdrawal depends on the system; it should be consistent with the mechanisms used for obtaining consent when possible. For example, if the consent is collected by email or a website, the mechanism for withdrawing it should be the same, not an alternative solution such as phone or fax'."
+      },
+      {
+        id: 14,
+        topic: "Tema 08",
+        category: "Teoría de Implementación",
+        question: "Bajo la directriz B.3.12 (Respuesta a incidentes de seguridad), ¿cuál es la distinción técnica fundamental entre un 'evento de seguridad de la información' y una 'brecha que involucra PII'?",
+        options: [
+          "A) No existe diferencia técnica; cualquier ping o escaneo de puertos fallido debe notificarse inmediatamente como brecha de PII a la autoridad de supervisión.",
+          "B) Un evento de seguridad (como escaneo de puertos, pings o intentos fallidos de autenticación) no resulta necesariamente en un acceso no autorizado real ni compromete la confidencialidad, integridad o disponibilidad de la PII, por lo que no detona per se una respuesta de notificación de brecha.",
+          "C) Una brecha de PII solo se califica si involucra la pérdida física de cintas de respaldo magnéticas.",
+          "D) Los eventos son gestionados exclusivamente por el PII Processor, mientras que las brechas son competencia exclusiva de la alta gerencia."
+        ],
+        correct: 1,
+        justification: "Cláusula B.3.12 (Nota 1): 'An information security event does not necessarily result in actual, or the significant probability of, unauthorized access to PII... These can include, but are not limited to, pings and other broadcast attacks on firewalls or edge servers, port scans, unsuccessful log-on attempts, denial of service attacks and packet sniffing'."
+      },
+      {
+        id: 15,
+        topic: "Tema 08",
+        category: "Teoría de Implementación",
+        question: "Según la guía B.3.4 (Roles y responsabilidades de seguridad de la información), ¿qué condiciones organizacionales debe reunir la persona designada para liderar el programa de gobernanza y privacidad (DPO / Oficial de Privacidad)?",
+        options: [
+          "A) Debe estar subordinada al área de Marketing Digital para priorizar el valor comercial de los datos.",
+          "B) Debe ser independiente, reportar directamente al nivel gerencial/directivo más alto, ser experta en legislación y práctica de protección de datos, y actuar como enlace con las autoridades de control.",
+          "C) Debe ser necesariamente un auditor externo perteneciente a una firma internacional de certificación.",
+          "D) Debe asumir la responsabilidad penal y legal exclusiva de todas las sanciones pecuniarias de la empresa."
+        ],
+        correct: 1,
+        justification: "Cláusula B.3.4: La persona responsable debe 'be independent and report directly to the appropriate management level of the organization... be involved in the management of all issues which relate to the processing of PII... be an expert in data protection legislation, regulation and practice; act as a contact point for supervisory authorities'."
+      },
+      {
+        id: 16,
+        topic: "Tema 08",
+        category: "Teoría de Implementación",
+        question: "Al realizar revisiones técnicas de cumplimiento sobre conjuntos de datos desidentificados según B.3.16, ¿qué prueba técnica específica recomienda la norma para validar la robustez de los algoritmos de anonimización?",
+        options: [
+          "A) Análisis estático de código fuente con reglas SonarQube.",
+          "B) Prueba de penetración tradicional de caja negra a nivel de red (Network Port Scanning).",
+          "C) Prueba del intruso motivado (Motivated Intruder Test) para validar que los métodos de desidentificación resistan intentos razonables de reidentificación.",
+          "D) Inspección manual de los encabezados HTTP de las peticiones GET/POST."
+        ],
+        correct: 2,
+        justification: "Cláusula B.3.16: 'As part of technical reviews... de-identified data sets can be subject to a motivated intruder test to validate that de-identification methods are compliant with organizational requirements'."
+      },
+      {
+        id: 17,
+        topic: "Tema 08",
+        category: "Teoría de Implementación",
+        question: "En entornos donde el Encargado (PII Processor) proporciona acceso a registros de auditoría (logs) a sus clientes, ¿qué controles de aislamiento exige B.3.25 para preservar la confidencialidad?",
+        options: [
+          "A) El cliente debe tener permisos de superusuario para modificar y depurar los logs a demanda.",
+          "B) El cliente solo debe acceder a registros relacionados exclusivamente con sus propias actividades, no debe acceder a logs de otros clientes ni tener la capacidad de enmendar o alterar los registros bajo ningún concepto.",
+          "C) Los logs de todos los clientes deben consolidarse en una sola base de datos pública accesible por API REST.",
+          "D) Los logs deben descargarse en texto plano sin cifrar cada 24 horas hacia el dispositivo endpoint del cliente."
+        ],
+        correct: 1,
+        justification: "Cláusula B.3.25 (Implementation guidance for PII processors): Se deben implementar controles para garantizar que el cliente 'can only access records that relate to that customer's activities; cannot access any log records which relate to the activities of other customers; and cannot amend the logs in any way'."
+      },
+      {
+        id: 18,
+        topic: "Tema 08",
+        category: "Teoría de Implementación",
+        question: "Respecto a la disposición segura y devolución de datos al término del contrato de un PII Processor (B.2.4.3), ¿por qué la política de retención debe definir un período de gracia antes de la destrucción definitiva?",
+        options: [
+          "A) Para permitir que el proveedor venda los metadatos agregados en mercados de publicidad.",
+          "B) Para proteger al cliente de perder su PII ante un vencimiento o descuido accidental en la renovación del contrato.",
+          "C) Para permitir que los administradores de sistemas utilicen la base como entorno de pruebas personal.",
+          "D) Es un requisito exclusivo para empresas públicas, quedando exentas las entidades privadas."
+        ],
+        correct: 1,
+        justification: "Cláusula B.2.4.3: 'The policy should cover the retention period for PII before its disposal after termination of a contract, to protect the customer from losing PII through an accidental lapse of the contract'."
+      },
+      {
+        id: 19,
+        topic: "Tema 08",
+        category: "Casos Prácticos de Auditoría",
+        question: "CASO 1: Un usuario revoca formalmente su consentimiento para el tratamiento de sus hábitos de compra en una plataforma de retail. La empresa detiene el envío de correos promocionales, pero conserva su histórico de compras para alimentar un nuevo modelo de segmentación algorítmica. Según B.1.3.5, ¿cuál es el dictamen del auditor?",
+        options: [
+          "A) Conforme: La revocación de consentimiento solo afecta a la publicidad por correo, permitiendo nuevos usos analíticos.",
+          "B) No Conforme: Si bien los tratamientos realizados antes del retiro de consentimiento son legítimos, los resultados de dicho tratamiento (ej. su perfil) no deben utilizarse para nuevos tratamientos ni perfiles una vez revocado el consentimiento.",
+          "C) Conforme: Toda empresa tiene derecho inalienable a monetizar datos analíticos agregados.",
+          "D) No Conforme únicamente si el titular presentó una queja formal ante el Poder Judicial."
+        ],
+        correct: 1,
+        justification: "Cláusula B.1.3.5 (Additional information): 'When consent for processing of specific PII is withdrawn, all the processing of PII performed before withdrawal should normally be considered as appropriate, but the results of such processing should not be used for new processing. For example, if a PII principal withdraws their consent for profiling, their profile should not be further used or consulted'."
+      },
+      {
+        id: 20,
+        topic: "Tema 08",
+        category: "Casos Prácticos de Auditoría",
+        question: "CASO 2: Un banco procesa solicitudes de crédito online. Cuando un cliente desea corregir su número de teléfono o actualizar su dirección de residencia, el portal le indica que debe enviar una carta física notariada por correo postal a la sede central. ¿Qué desviación de auditoría se identifica bajo B.1.3.2?",
+        options: [
+          "A) No hay desviación; exigir cartas notariales físicas garantiza la autenticidad del trámite según las mejores prácticas bancarias.",
+          "B) No Conformidad frente a B.1.3.2: El punto de contacto para atender las solicitudes de los titulares debe proporcionarse de forma accesible y similar al medio utilizado para recopilar los datos (si se recopilaron por web, el punto de atención debe ser web y no desviar a medios engorrosos).",
+          "C) Desviación leve que se subsana publicando un aviso en la vitrina física de la agencia.",
+          "D) No Conformidad frente a la cláusula de escritorio limpio B.3.19."
+        ],
+        correct: 1,
+        justification: "Cláusula B.1.3.2: 'The contact point should be provided in a similar way to that used to collect PII and consent (e.g. if PII are collected by email or a website, the contact point should be by email or the website, not an alternative such as phone or fax)'."
+      },
+      {
+        id: 21,
+        topic: "Tema 08",
+        category: "Casos Prácticos de Auditoría",
+        question: "CASO 3: Durante la revisión de una pasarela de pagos, el auditor descubre que los archivos temporales de transacción (roll-back journals y volcados de sesión con números de tarjeta) permanecen almacenados en el disco del servidor de aplicaciones por más de 18 meses. El área de TI alega que 'se borran solos cuando el disco se llena'. ¿Qué directriz se ha vulnerado?",
+        options: [
+          "A) B.1.4.7 / B.2.4.2 (Temporary files): Se requiere un procedimiento formal y periódico (ej. 'garbage collection') que elimine los archivos temporales dentro de un plazo documentalmente establecido una vez culminada la tarea.",
+          "B) B.3.28 (Application security requirements) únicamente.",
+          "C) B.1.5.2 (Bases para transferencias transfronterizas).",
+          "D) Ninguna; la gestión dinámica de almacenamiento del sistema operativo es suficiente evidencia de cumplimiento."
+        ],
+        correct: 0,
+        justification: "Cláusulas B.1.4.7 y B.2.4.2 (Temporary files): 'Temporary files are not needed after the related information processing task has been completed... a 'garbage collection' procedure should identify the relevant files and determine how long it has been since they were last used' dentro de un período especificado y documentado."
+      },
+      {
+        id: 22,
+        topic: "Tema 08",
+        category: "Casos Prácticos de Auditoría",
+        question: "CASO 4: Un cliente institucional exige una auditoría física presencial e intrusiva en los racks de un proveedor SaaS multi-tenant que alberga datos de 50 bancos distintos. El proveedor se rehúsa por motivos de confidencialidad y le presenta en su lugar su informe de auditoría independiente reciente bajo ISO/IEC 27001 e ISO/IEC 27701. ¿Cómo debe evaluar el auditor esta situación según B.3.15?",
+        options: [
+          "A) Debe sancionar al proveedor con una No Conformidad Mayor por obstrucción a la auditoría del cliente.",
+          "B) La postura del proveedor es conforme bajo B.3.15: Cuando las auditorías individuales son impracticables o elevan riesgos de seguridad, la evidencia de auditorías independientes transparentes es un método válido y aceptable para satisfacer la necesidad de verificación del cliente.",
+          "C) El proveedor debe permitir el acceso irrestricto a los servidores físicos a cualquier cliente que lo solicite.",
+          "D) El contrato debe rescindirse obligatoriamente por incumplimiento de la cláusula 6.1.3."
+        ],
+        correct: 1,
+        justification: "Cláusula B.3.15: 'Where an organization is acting as a PII processor, and where individual customer audits are impractical or can increase risks to security, the organization should make available to customers... independent evidence that information security is implemented and operated... A relevant independent audit... should normally be an acceptable method'."
+      },
+      {
+        id: 23,
+        topic: "Tema 08",
+        category: "Casos Prácticos de Auditoría",
+        question: "CASO 5: Tras sufrir una intrusión donde se filtraron historiales clínicos de 15,000 pacientes, el equipo de ciberseguridad restableció el servidor, pero el registro formal del incidente solo dice: 'Fuga contenida el 14/08/2026'. No se detalló qué campos médicos se expusieron, qué pacientes fueron afectados ni a qué entidades se reportó. ¿Qué no conformidad técnica se formula según B.3.12?",
+        options: [
+          "A) Incumplimiento de B.3.12: El registro de la brecha debe contener obligatoriamente descripción del incidente, temporalidad, consecuencias, reportante, a quién se reportó, pasos de resolución y descripción detallada de la PII comprometida.",
+          "B) Incumplimiento de B.3.26 sobre uso exclusivo de criptografía cuántica.",
+          "C) Falta menor sin impacto que se subsana verbalmente en la reunión de cierre.",
+          "D) Incumplimiento de B.1.2.8 por falta de acuerdo de co-controlador."
+        ],
+        correct: 0,
+        justification: "Cláusula B.3.12: Exige que el registro de una brecha contenga: descripción, temporalidad, consecuencias, nombre del reportante, a quién se reportó, medidas de resolución (responsable y datos recuperados) y la descripción de la PII comprometida."
+      },
+      {
+        id: 24,
+        topic: "Tema 08",
+        category: "Casos Prácticos de Auditoría",
+        question: "CASO 6: Para probar una pasarela de pagos en desarrollo, el líder técnico copió la base de datos de producción con 40,000 tarjetas y DNIs reales al servidor de QA, argumentando que 'así las pruebas de carga son 100% idénticas a la realidad'. ¿Qué control y directriz se incumplió frontalmente?",
+        options: [
+          "A) B.3.31 (Test information): No debe usarse PII real para propósitos de prueba; deben utilizarse datos sintéticos o falsos. Si fuera inevitable, deben replicarse los mismos controles de seguridad que en producción y respaldarse con análisis de riesgos.",
+          "B) B.3.19 (Clear desk and clear screen policy).",
+          "C) B.1.3.11 (Decisiones basadas en tratamiento automatizado).",
+          "D) B.3.22 (User endpoint devices)."
+        ],
+        correct: 0,
+        justification: "Cláusula B.3.31: 'PII should not be used for testing purposes; false or synthetic PII should be used. Where the use of PII for testing purposes cannot be avoided, technical and organizational measures equivalent to those used in the production environment should be implemented... a risk assessment should be undertaken'."
+      }
+    ];
+
+    /**
+     * ESTADO GLOBAL
+     */
+    const state = {
+      activeTopic: 'tema07', // 'tema07' | 'tema08' | 'ambos'
+      currentFilter: 'Todos',
+      currentQuestionIndex: 0,
+      userAnswers: {},       // { [questionId]: selectedIdx }
+      viewMode: 'focus',
+      soundEnabled: true,
+      secondsElapsed: 0,
+      timerInterval: null
+    };
+
+    
+    /**
+     * BANCO DE PREGUNTAS TEMA 09: ISO/IEC 29100 Y ANEXO C (ISO/IEC 27701:2025)
+     */
+    const questionsTema09 = [
+      {
+        id: 25,
+        topic: "Tema 09",
+        category: "Teoría y Mapeo Normativo",
+        question: "Al analizar la correspondencia entre los 11 principios de privacidad de ISO/IEC 29100 y los controles para Encargados (PII Processors) en la Tabla C.2 de ISO/IEC 27701:2025, ¿cuáles principios figuran expresamente como 'N/A' (No Aplicables)?",
+        options: [
+          "A) Principio 10 (Information security) y Principio 11 (Privacy compliance).",
+          "B) Principio 3 (Collection limitation) y Principio 6 (Accuracy and quality).",
+          "C) Principio 4 (Data minimization) y Principio 5 (Use, retention and disclosure limitation).",
+          "D) Principio 7 (Openness, transparency and notice) y Principio 9 (Accountability)."
+        ],
+        correct: 1,
+        justification: "Tabla C.2 de ISO/IEC 27701:2025: Los principios 3 (Collection limitation) y 6 (Accuracy and quality) están marcados como 'N/A' para PII Processors porque el encargado no recopila directamente del titular ni determina la exactitud de los datos de origen, sino que procesa por cuenta e instrucciones del responsable."
+      },
+      {
+        id: 26,
+        topic: "Tema 09",
+        category: "Teoría y Mapeo Normativo",
+        question: "Bajo la Tabla C.1, ¿qué controles de la norma ISO/IEC 27701:2025 comparten de forma cruzada el Principio 4 (Data minimization) y el Principio 5 (Use, retention and disclosure limitation) de ISO/IEC 29100?",
+        options: [
+          "A) A.1.4.5 (PII minimization objectives) y A.1.4.6 (PII de-identification and deletion at the end of processing).",
+          "B) A.1.2.4 (Obtención de consentimiento) y A.1.2.7 (Contratos con procesadores).",
+          "C) A.1.3.3 (Determinación de información) y A.1.3.7 (Acceso y rectificación).",
+          "D) A.1.5.2 (Transferencias transfronterizas) y A.1.5.3 (Países receptores)."
+        ],
+        correct: 0,
+        justification: "Tabla C.1: Tanto el Principio 4 (Data minimization) como el Principio 5 (Use, retention and disclosure limitation) mapean directamente a los controles A.1.4.5 (objetivos de minimización/desidentificación) y A.1.4.6 (eliminación o desidentificación al terminar el tratamiento)."
+      },
+      {
+        id: 27,
+        topic: "Tema 09",
+        category: "Teoría y Mapeo Normativo",
+        question: "En la correspondencia de ISO/IEC 29100 con ISO/IEC 27701:2025, ¿a qué control específico de PII Controllers mapea de forma exclusiva el Principio 11 (Privacy compliance) según la Tabla C.1?",
+        options: [
+          "A) A.1.4.10 (PII transmission controls).",
+          "B) A.1.2.6 (Privacy impact assessment - PIA).",
+          "C) A.1.3.5 (Providing mechanism to modify or withdraw consent).",
+          "D) A.1.2.8 (Joint PII controller)."
+        ],
+        correct: 1,
+        justification: "Tabla C.1: En '11. Privacy compliance (ISO/IEC 29100:2024, 6.12)', el único control relacionado para PII Controllers es 'A.1.2.6 Privacy impact assessment'."
+      },
+      {
+        id: 28,
+        topic: "Tema 09",
+        category: "Teoría y Mapeo Normativo",
+        question: "¿Cómo satisface un Procesador de PII (PII Processor) el Principio 8 (Individual participation and access) de la norma ISO/IEC 29100 según la Tabla C.2?",
+        options: [
+          "A) Publicando un portal web independiente donde los titulares pueden solicitar la baja directa de sus cuentas sin avisar al cliente.",
+          "B) Mediante el control A.2.3.2 (Comply with obligations to PII principals), proporcionando al cliente (Controller) los medios técnicos y organizativos para que este cumpla con sus obligaciones hacia los titulares.",
+          "C) El principio es calificado como N/A para procesadores en todas las circunstancias.",
+          "D) Contratando un DPO externo que atienda directamente las reclamaciones judiciales de los usuarios."
+        ],
+        correct: 1,
+        justification: "Tabla C.2: Para '8. Individual participation and access (ISO/IEC 29100:2024, 6.9)', el control asociado es A.2.3.2 ('Comply with obligations to PII principals'), cuyo mandato es dar al cliente los medios necesarios para responder al titular."
+      },
+      {
+        id: 29,
+        topic: "Tema 09",
+        category: "Teoría y Mapeo Normativo",
+        question: "Según la Tabla C.1, ¿cuál de los siguientes grupos de controles corresponde al Principio 7 (Openness, transparency and notice) de ISO/IEC 29100 para PII Controllers?",
+        options: [
+          "A) A.1.4.8 (Retention) y A.1.4.9 (Disposal).",
+          "B) A.1.3.3 (Determining information for PII principals) y A.1.3.4 (Providing information to PII principals).",
+          "C) A.1.2.7 (Contracts with PII processors) y A.1.2.8 (Joint PII controller).",
+          "D) A.1.4.4 (Accuracy and quality) y A.1.4.7 (Temporary files)."
+        ],
+        correct: 1,
+        justification: "Tabla C.1: '7. Openness, transparency and notice (ISO/IEC 29100:2024, 6.8)' mapea a A.1.3.3 (Determinar la información a proporcionar al titular) y A.1.3.4 (Proporcionar información clara, accesible e inteligible)."
+      },
+      {
+        id: 30,
+        topic: "Tema 09",
+        category: "Teoría y Mapeo Normativo",
+        question: "Respecto al Principio 9 (Accountability / Responsabilidad proactiva) en PII Processors, ¿qué controles de la Tabla A.2 respaldan este principio de acuerdo con la Tabla C.2?",
+        options: [
+          "A) A.2.2.3 (Organization's purposes) y A.2.2.4 (Marketing and advertising use).",
+          "B) A.2.2.7 (Records related to processing PII), A.2.4.3 (Return, transfer or disposal of PII), A.2.5.2 (Basis for PII transfer between jurisdictions) y A.2.5.3 (Countries and international organizations to which PII can be transferred).",
+          "C) A.2.4.2 (Temporary files) y A.2.4.4 (PII transmission controls).",
+          "D) Únicamente el control A.2.2.5 sobre advertencia de instrucciones infractoras."
+        ],
+        correct: 1,
+        justification: "Tabla C.2: '9. Accountability (ISO/IEC 29100:2024, 6.10)' vincula formalmente los controles A.2.2.7 (registros del tratamiento), A.2.4.3 (política de retorno/disposición), A.2.5.2 (base legal de transferencias) y A.2.5.3 (especificación de países de destino)."
+      },
+      {
+        id: 31,
+        topic: "Tema 09",
+        category: "Casos Prácticos de Auditoría",
+        question: "CASO 1: Una aplicación móvil de linterna exige de manera obligatoria permisos para acceder a la lista completa de contactos, la galería de fotos y la ubicación GPS del usuario para poder encender el flash LED. ¿Qué principio de la ISO/IEC 29100 y qué control de ISO/IEC 27701:2025 se están vulnerando directamente?",
+        options: [
+          "A) Principio 6 (Accuracy and quality) y control A.1.4.4.",
+          "B) Principio 3 (Collection limitation) de ISO/IEC 29100 y control A.1.4.2 (Limit collection).",
+          "C) Principio 10 (Information security) y control A.1.2.7.",
+          "D) Principio 11 (Privacy compliance) y control A.1.5.2."
+        ],
+        correct: 1,
+        justification: "El Principio 3 (Collection limitation) de ISO/IEC 29100 exige recolectar solo lo estrictamente necesario. En la Tabla C.1, este principio se implementa a través del control A.1.4.2 (Limit collection)."
+      },
+      {
+        id: 32,
+        topic: "Tema 09",
+        category: "Casos Prácticos de Auditoría",
+        question: "CASO 2: Un banco rechazó un crédito hipotecario debido a que su base de datos registraba una deuda impaga de un cliente que había sido cancelada y certificada hace 5 años, pero el sistema bancario jamás actualizó el estado del registro. Al auditar la conformidad con ISO/IEC 29100 y 27701, ¿qué principio y control resultan no conformes?",
+        options: [
+          "A) Principio 6 (Accuracy and quality) de ISO/IEC 29100 y control A.1.4.4 (Accuracy and quality).",
+          "B) Principio 1 (Consent and choice) y control A.1.2.5.",
+          "C) Principio 5 (Use, retention and disclosure limitation) y control A.1.5.5.",
+          "D) Principio 9 (Accountability) y control A.1.2.8."
+        ],
+        correct: 0,
+        justification: "Tabla C.1: El Principio 6 (Accuracy and quality) exige que la PII sea tan exacta, completa y actualizada como sea necesario para los fines de tratamiento, lo cual mapea exclusivamente al control A.1.4.4."
+      },
+      {
+        id: 33,
+        topic: "Tema 09",
+        category: "Casos Prácticos de Auditoría",
+        question: "CASO 3: Un proveedor cloud SaaS de planillas (PII Processor) toma la información de sueldos y profesiones de los colaboradores de sus clientes corporativos para entrenar y comercializar su propio modelo predictivo de compensaciones en el mercado, sin autorización de sus clientes. ¿Qué principio de ISO/IEC 29100 y control de la Tabla A.2 infringe?",
+        options: [
+          "A) Principio 3 (Collection limitation) y control A.2.4.2.",
+          "B) Principio 2 (Purpose legitimacy and specification) de ISO/IEC 29100 y controles A.2.2.3 (Organization's purposes) y A.2.2.4 (Marketing and advertising use).",
+          "C) Principio 10 (Information security) y control A.2.4.4.",
+          "D) Principio 8 (Individual participation and access) y control A.2.5.7."
+        ],
+        correct: 1,
+        justification: "Tabla C.2: El Principio 2 (Purpose legitimacy and specification) exige que los datos se traten exclusivamente para los fines especificados. En encargados, mapea a A.2.2.3 (tratar solo bajo instrucciones documentadas) y A.2.2.4 (prohibición de uso publicitario/comercial propio)."
+      },
+      {
+        id: 34,
+        topic: "Tema 09",
+        category: "Casos Prácticos de Auditoría",
+        question: "CASO 4: Un centro de telemedicina envía historiales clínicos de pacientes y análisis genéticos entre consultorios regionales a través de correos electrónicos en texto plano y servicios de mensajería sin cifrar. Según el mapeo de ISO/IEC 27701 con ISO/IEC 29100, ¿qué principio y control de transferencia se incumplen?",
+        options: [
+          "A) Principio 1 (Consent and choice) y control A.1.2.2.",
+          "B) Principio 10 (Information security) de ISO/IEC 29100 y control A.1.4.10 (PII transmission controls).",
+          "C) Principio 7 (Openness, transparency and notice) y control A.1.3.4.",
+          "D) Principio 4 (Data minimization) y control A.1.4.3."
+        ],
+        correct: 1,
+        justification: "Tabla C.1: El Principio 10 (Information security) de ISO/IEC 29100 mapea directamente al control A.1.4.10 (PII transmission controls), el cual exige proteger la PII transmitida por redes de comunicación."
+      },
+      {
+        id: 35,
+        topic: "Tema 09",
+        category: "Casos Prácticos de Auditoría",
+        question: "CASO 5: Dos compañías aéreas crean un programa conjunto de viajero frecuente (Joint PII Controllers). Sin embargo, ninguna de las dos documentó el acuerdo de gobernanza, no se determinó quién respondería ante incidentes, ni se informó al usuario qué aerolínea era el punto de contacto para ejercer derechos ARCO. ¿Qué principio de ISO/IEC 29100 y control de ISO/IEC 27701:2025 falló?",
+        options: [
+          "A) Principio 9 (Accountability) de ISO/IEC 29100 y control A.1.2.8 (Joint PII controller).",
+          "B) Principio 3 (Collection limitation) y control A.1.4.2.",
+          "C) Principio 6 (Accuracy and quality) y control A.1.4.4.",
+          "D) Principio 11 (Privacy compliance) y control A.1.4.7."
+        ],
+        correct: 0,
+        justification: "Tabla C.1: El Principio 9 (Accountability) engloba el control A.1.2.8 (Joint PII controller), el cual exige delimitar y documentar roles transparentes, responsabilidades de seguridad y el punto de contacto para los titulares."
+      },
+      {
+        id: 36,
+        topic: "Tema 09",
+        category: "Casos Prácticos de Auditoría",
+        question: "CASO 6: Una tienda virtual implementa un chatbot de compras y oculta la política de privacidad en un enlace roto al pie de página, impidiendo que el comprador sepa quién es el responsable, qué datos se guardan o cómo revocar el consentimiento. ¿Qué principio de ISO/IEC 29100 y controles de la Tabla A.1 se están vulnerando?",
+        options: [
+          "A) Principio 7 (Openness, transparency and notice) de ISO/IEC 29100 y controles A.1.3.3 y A.1.3.4.",
+          "B) Principio 5 (Use, retention and disclosure limitation) y control A.1.4.8.",
+          "C) Principio 10 (Information security) y control A.1.4.10.",
+          "D) Principio 6 (Accuracy and quality) y control A.1.4.4."
+        ],
+        correct: 0,
+        justification: "Tabla C.1: El Principio 7 (Openness, transparency and notice) exige brindar avisos transparentes, claros y accesibles, implementado mediante los controles A.1.3.3 (Determinar información) y A.1.3.4 (Proporcionar información al titular)."
+      }
+    ];
+
+    
+    /**
+     * BANCO DE PREGUNTAS TEMA 10: GDPR / RGPD & GUÍA SOFTEXPERT (ANEXO D ISO/IEC 27701:2025)
+     */
+    const questionsTema10 = [
+      {
+        id: 37,
+        topic: "Tema 10",
+        category: "Teoría GDPR y Mapeo Normativo",
+        question: "De acuerdo con el Artículo 33 del GDPR y las directrices de gestión de brechas de SoftExpert / ISO 27701 (B.3.11, B.3.12), ¿cuál es el plazo máximo estándar que tiene el Responsable para notificar una brecha de datos personales a la autoridad de control competente y qué contenido mínimo debe incluir?",
+        options: [
+          "A) Hasta 30 días calendario, incluyendo únicamente el costo financiero estimado del impacto.",
+          "B) Dentro de las 72 horas posteriores a tener constancia de la brecha, detallando la naturaleza del incidente, categorías y número aproximado de afectados, datos del DPO, posibles consecuencias y medidas correctivas adoptadas.",
+          "C) 24 horas continuas, notificando exclusivamente si los datos afectados pertenecían a funcionarios públicos.",
+          "D) No existe un plazo estipulado; se reporta únicamente al finalizar el año fiscal en el informe anual de auditoría."
+        ],
+        correct: 1,
+        justification: "GDPR Art. 33 (1)-(3), ISO 27701 B.3.11/B.3.12 y SoftExpert Data Breach: La notificación debe realizarse sin dilación indebida y, a más tardar, 72 horas después de tener constancia. Debe contener naturaleza de la brecha, número/categorías de afectados, contacto del DPO, consecuencias probables y medidas adoptadas."
+      },
+      {
+        id: 38,
+        topic: "Tema 10",
+        category: "Teoría GDPR y Mapeo Normativo",
+        question: "El Artículo 30 del GDPR regula el Registro de Actividades de Tratamiento (ROPA). Según la correspondencia con ISO/IEC 27701:2025 (Tabla D.1), ¿a qué controles normativos de PII Controllers y PII Processors mapea directamente este requerimiento?",
+        options: [
+          "A) A.1.4.10 y A.2.4.4 (Controles de transmisión por red).",
+          "B) A.1.2.9 (Records related to processing PII para Controllers) y A.2.2.7 (Records related to processing PII para Processors).",
+          "C) A.1.3.11 (Decisiones automatizadas) y A.2.2.4 (Marketing).",
+          "D) A.3.26 (Criptografía) y A.3.20 (Soportes de almacenamiento)."
+        ],
+        correct: 1,
+        justification: "Tabla D.1 de ISO/IEC 27701: El Art. 30 de GDPR mapea directamente con los controles A.1.2.9 / B.1.2.9 (registros del responsable) y A.2.2.7 / B.2.2.7 (registros del encargado sobre categorías de tratamiento efectuadas por cuenta del cliente)."
+      },
+      {
+        id: 39,
+        topic: "Tema 10",
+        category: "Teoría GDPR y Mapeo Normativo",
+        question: "El principio de 'Protección de datos desde el diseño y por defecto' consagrado en el Artículo 25 del GDPR se encuentra estructurado en ISO/IEC 27701:2025 a través de:",
+        options: [
+          "A) Exclusivamente las auditorías externas anuales del Anexo E.",
+          "B) Los controles del dominio B.1.4 (para Controllers), B.2.4 (para Processors) y las directrices de ciclo de vida seguro de sistemas B.3.27 y B.3.29.",
+          "C) La suscripción obligatoria de un seguro contra incidentes cibernéticos.",
+          "D) La publicación de los nombres de los administradores de bases de datos en el portal de transparencia."
+        ],
+        correct: 1,
+        justification: "Tabla D.1: El Art. 25(1) y 25(2) del GDPR mapea directamente a los dominios B.1.4 / B.2.4 (Privacy by design and by default) y a los controles de ingeniería de software segura B.3.27 (SDLC seguro) y B.3.29 (Principios de arquitectura y sistemas seguros)."
+      },
+      {
+        id: 40,
+        topic: "Tema 10",
+        category: "Teoría GDPR y Mapeo Normativo",
+        question: "Bajo los Artículos 37 al 39 del GDPR y la directriz B.3.4 de ISO 27701, ¿cuál de las siguientes es una función esencial del Delegado de Protección de Datos (DPO / Data Protection Officer)?",
+        options: [
+          "A) Aprobar y firmar las órdenes de compra de infraestructura de hardware de TI.",
+          "B) Asumir la representación legal y penal de la empresa ante demandas laborales de los empleados.",
+          "C) Informar y asesorar al responsable o encargado, supervisar el cumplimiento normativo, cooperar con la autoridad de control y actuar como punto de contacto.",
+          "D) Realizar personalmente las copias de seguridad de las bases de datos de la empresa todos los fines de semana."
+        ],
+        correct: 2,
+        justification: "GDPR Art. 39, ISO 27701 B.3.4 y SoftExpert DPO Role: Las funciones principales del DPO son asesorar a la organización sobre obligaciones legales, supervisar el cumplimiento del GDPR y políticas internas, cooperar con la autoridad de control y servir de enlace con los interesados."
+      },
+      {
+        id: 41,
+        topic: "Tema 10",
+        category: "Teoría GDPR y Mapeo Normativo",
+        question: "Respecto a las condiciones para el consentimiento según el Artículo 7 del GDPR y el control A.1.2.4 / A.1.2.5 de ISO 27701:2025, ¿cuál es la regla de validez obligatoria?",
+        options: [
+          "A) Las casillas de verificación premarcadas en formularios web son plenamente válidas como consentimiento tácito.",
+          "B) El consentimiento debe ser demostrable, otorgado mediante una declaración o acción afirmativa clara, separable de otros asuntos y el titular debe tener derecho a retirarlo en cualquier momento con la misma facilidad con que lo otorgó.",
+          "C) El consentimiento no puede ser retirado una vez firmado el contrato de prestación de servicios.",
+          "D) Es válido únicamente si el titular es mayor de 25 años en todos los países de la Unión Europea."
+        ],
+        correct: 1,
+        justification: "GDPR Art. 7 y control A.1.2.4/A.1.2.5: El responsable debe ser capaz de demostrar el consentimiento. Este debe ser explícito, claro y comprensible (no premarcado ni condicionado innecesariamente), y debe ser tan fácil retirarlo como darlo."
+      },
+      {
+        id: 42,
+        topic: "Tema 10",
+        category: "Teoría GDPR y Mapeo Normativo",
+        question: "En el Capítulo V del GDPR (Artículos 44 al 49), ¿qué instrumento legal reconoce el reglamento para autorizar transferencias internacionales de datos hacia un tercer país que NO cuenta con una decisión de adecuación?",
+        options: [
+          "A) Una declaración jurada simple firmada únicamente por el webmaster del sitio.",
+          "B) Cláusulas Tipo de Protección de Datos (Standard Contractual Clauses - SCC) o Normas Corporativas Vinculantes (Binding Corporate Rules - BCR), complementadas con garantías de seguridad adecuadas.",
+          "C) La sola traducción jurada de la política de privacidad al idioma local del país de destino.",
+          "D) La aprobación verbal en una llamada telefónica con la autoridad de control."
+        ],
+        correct: 1,
+        justification: "GDPR Arts. 46 y 47, y mapeo ISO 27701 B.1.5.2 / B.2.5.2: En ausencia de decisión de adecuación (Art. 45), las transferencias transfronterizas exigen garantías adecuadas como las Cláusulas Contractuales Tipo (SCC) o las Normas Corporativas Vinculantes (BCR)."
+      },
+      {
+        id: 43,
+        topic: "Tema 10",
+        category: "Casos Prácticos de Auditoría",
+        question: "CASO 1: Un banco internacional sufrió una filtración de base de datos que expuso números de tarjetas y saldos de 1.3 millones de usuarios. El equipo de TI bloqueó el exploit, pero la gerencia decidió ocultar el hecho durante 4 meses para evitar daños a su cotización bursátil. Como auditor de protección de datos, ¿qué infracción gravísima bajo GDPR y ISO 27701 identificas?",
+        options: [
+          "A) Violación del deber de notificación en 72 horas del Art. 33 del GDPR y del control A.3.12 / B.3.12 (Response to information security incidents), sujeta a las sanciones económicas máximas del reglamento.",
+          "B) Infracción leve subsanable únicamente si el banco regala un mes de mantenimiento de cuenta a los clientes.",
+          "C) Falta al control A.1.4.7 sobre eliminación de archivos temporales.",
+          "D) Cumplimiento válido de la excepción de secreto bancario corporativo."
+        ],
+        correct: 0,
+        justification: "GDPR Art. 33 y control A.3.12 / B.3.12: La omisión deliberada de notificación a la autoridad de control superando las 72 horas sin justificación constituye una infracción muy grave sujeta a multas de hasta 20 millones de euros o el 4% del volumen de negocio anual global."
+      },
+      {
+        id: 44,
+        topic: "Tema 10",
+        category: "Casos Prácticos de Auditoría",
+        question: "CASO 2: Una empresa retail implementa un módulo de Recursos Humanos para contratación (Hiring Request). Al auditar sus procesos según el enfoque de SoftExpert y GDPR (Art. 35 y Art. 5), el auditor nota que no se utiliza modelado BPMN para rastrear el ciclo de vida de los datos personales ni se mapearon los riesgos de acceso indebido en cada etapa. ¿Qué herramienta de gestión y control normativo se requiere implementar?",
+        options: [
+          "A) Mapeo de datos en procesos de negocio (Data Mapping in BPMN) para identificar datos sensibles, riesgos asociados en cada tarea y controles mitigadores, soportando la Evaluación de Impacto (PIA / Art. 35 GDPR).",
+          "B) Un filtro web de navegación para los candidatos a empleo.",
+          "C) Una auditoría financiera de balances generales únicamente.",
+          "D) El cierre definitivo de la página de postulación online."
+        ],
+        correct: 0,
+        justification: "Guía SoftExpert (Data Mapping in Processes) y GDPR Art. 35 / ISO 27701 A.1.2.6: El mapeo de flujos de datos en procesos BPMN permite determinar qué datos personales/sensibles ingresan, dónde se almacenan y qué controles mitigan los riesgos de fuga."
+      },
+      {
+        id: 45,
+        topic: "Tema 10",
+        category: "Casos Prácticos de Auditoría",
+        question: "CASO 3: Un ciudadano europeo solicita a una plataforma web la eliminación de su cuenta y de todos sus datos personales (Derecho de Supresión / Derecho al Olvido - Art. 17 GDPR). La plataforma responde que 'su política interna prohíbe eliminar registros de usuarios'. ¿Cuál es el dictamen del auditor?",
+        options: [
+          "A) Conforme: La política interna de una empresa privada prevalece sobre los reglamentos internacionales.",
+          "B) No Conforme: Vulneración frontal del Artículo 17 del GDPR y control A.1.3.7 de ISO 27701 (Access, correction or erasure). El titular tiene derecho a la supresión de sus datos si se retiró el consentimiento o los datos ya no son necesarios para el fin que justificó su tratamiento.",
+          "C) Conforme, siempre y cuando la empresa no le cobre mensualidades al usuario.",
+          "D) Desviación menor que se resuelve bloqueando el correo del solicitante."
+        ],
+        correct: 1,
+        justification: "GDPR Art. 17 y control A.1.3.7: El titular tiene derecho a que sus datos sean suprimidos sin dilación indebida cuando retira su consentimiento o los datos dejan de ser necesarios para los fines previstos, sin que una política interna comercial pueda anular este derecho."
+      },
+      {
+        id: 46,
+        topic: "Tema 10",
+        category: "Casos Prácticos de Auditoría",
+        question: "CASO 4: Un hospital contrata a una empresa externa de software médico (Encargado) sin suscribir un contrato de tratamiento de datos que defina el objeto, la duración, el tipo de datos y la obligación de implementar medidas técnicas y de confidencialidad. ¿Qué artículo clave del GDPR y qué control de ISO 27701 se están incumpliendo?",
+        options: [
+          "A) Artículo 28 del GDPR (Encargado del tratamiento) y controles A.1.2.7 / B.1.2.7 (Contracts with PII processors).",
+          "B) Artículo 15 del GDPR (Derecho de acceso).",
+          "C) Artículo 42 del GDPR (Certificación voluntaria).",
+          "D) Control A.3.19 sobre escritorios limpios."
+        ],
+        correct: 0,
+        justification: "GDPR Art. 28(3) y control A.1.2.7 / B.1.2.7: El tratamiento de datos por cuenta de un responsable debe regirse por un contrato o acto jurídico vinculante que estipule claramente las obligaciones, medidas de seguridad y directrices bajo las cuales actúa el encargado."
+      },
+      {
+        id: 47,
+        topic: "Tema 10",
+        category: "Casos Prácticos de Auditoría",
+        question: "CASO 5: Una entidad financiera rechaza automáticamente una solicitud de hipoteca a través de un algoritmo de machine learning sin brindar al cliente la posibilidad de expresar su punto de vista, solicitar revisión con un analista humano ni impugnar la decisión. ¿Qué derecho del GDPR y control de ISO 27701 se violó?",
+        options: [
+          "A) Control A.1.4.9 (Disposal).",
+          "B) Artículo 22 del GDPR (Decisiones individuales automatizadas, incluida la elaboración de perfiles) y control A.1.3.11 (Automated decision making).",
+          "C) Artículo 8 del GDPR (Consentimiento de menores).",
+          "D) Control A.3.31 (Test information)."
+        ],
+        correct: 1,
+        justification: "GDPR Art. 22 y control A.1.3.11: Todo interesado tiene derecho a no ser objeto de una decisión basada únicamente en el tratamiento automatizado que produzca efectos jurídicos sobre él, debiendo garantizarse el derecho a obtener intervención humana, expresar su punto de vista e impugnar la decisión."
+      },
+      {
+        id: 48,
+        topic: "Tema 10",
+        category: "Casos Prácticos de Auditoría",
+        question: "CASO 6: Tras un incidente de fuga de datos provocado por la falta de revocación de credenciales a un administrador despedido, la organización cerró el ticket sin realizar una investigación de causa raíz (como el diagrama de Ishikawa / Espina de pescado) ni formular un Plan de Acción Correctiva. De acuerdo con el módulo de 'Occurrence Management' de SoftExpert y la cláusula 10.2 de ISO 27701, ¿qué hallazgo formula el auditor?",
+        options: [
+          "A) No Conformidad: Ante no conformidades o incidentes, la organización debe evaluar la necesidad de acciones para eliminar la causa raíz y formular un plan de acción para evitar su recurrencia, manteniendo evidencia documentada de los resultados.",
+          "B) Observación positiva por la rápida resolución informal del incidente.",
+          "C) No Conformidad referida únicamente a la falta de presupuesto publicitario.",
+          "D) Conformidad plena, pues el despido del empleado extingue la necesidad de investigación."
+        ],
+        correct: 0,
+        justification: "ISO/IEC 27701 cláusula 10.2 (Nonconformity and corrective action) y SoftExpert Occurrence & Action Management: Es obligatorio determinar las causas de las no conformidades e incidentes (análisis causa-raíz), implementar planes de acción para evitar su repetición y evaluar la eficacia de las acciones tomadas."
+      }
+    ];
+
+    const questionsTema11 = [
+      {
+        id: 49,
+        topic: "Tema 11",
+        category: "Teoría y Mapeo Normativo",
+        question: "De acuerdo con el alcance definido en el Anexo E de la norma ISO/IEC 27701:2025, ¿cuál es la distinción fundamental entre el estándar ISO/IEC 27018 y el estándar ISO/IEC 29151?",
+        options: [
+          "A) ISO/IEC 27018 es una ley obligatoria en Sudamérica, mientras que ISO/IEC 29151 solo aplica a entidades públicas europeas.",
+          "B) ISO/IEC 27018 proporciona directrices para procesadores de PII (PII Processors) en nubes públicas, mientras que ISO/IEC 29151 es un código de prácticas con controles y orientación extendida principalmente para responsables (PII Controllers).",
+          "C) No existe diferencia; ambas normas fueron canceladas y reemplazadas de forma obligatoria por COBIT 2019.",
+          "D) ISO/IEC 29151 regula exclusivamente hardware físico de servidores, mientras que ISO/IEC 27018 regula redes cableadas."
+        ],
+        correct: 1,
+        justification: "Anexo E (Encabezado): 'ISO/IEC 27018 gives further information for organizations acting as PII processors and providing public cloud services. ISO/IEC 29151 gives additional controls and guidance for the processing of PII by PII controllers'."
+      },
+      {
+        id: 50,
+        topic: "Tema 11",
+        category: "Teoría y Mapeo Normativo",
+        question: "Al revisar la Tabla E.1 de ISO/IEC 27701:2025, ¿por qué prácticamente todos los controles del bloque B.1 (Guía de implementación para PII Controllers) figuran como 'N/A' respecto a ISO/IEC 27018?",
+        options: [
+          "A) Porque el estándar ISO/IEC 27018 está orientado de forma específica y exclusiva a organizaciones que actúan como procesadores de PII en servicios de nube pública.",
+          "B) Porque ISO/IEC 27018 prohíbe el uso de controladores de datos en Internet.",
+          "C) Debido a un error de edición en la segunda edición de la norma.",
+          "D) Porque los controladores de PII solo deben certificarse bajo normas de calidad ISO 9001."
+        ],
+        correct: 0,
+        justification: "Tabla E.1 y alcance de ISO/IEC 27018: Al ser un código de práctica específico para PII Processors en nubes públicas, no contiene requisitos directos para las obligaciones exclusivas de un PII Controller (como recolección, consentimiento directo o atención de derechos de titulares)."
+      },
+      {
+        id: 51,
+        topic: "Tema 11",
+        category: "Teoría y Mapeo Normativo",
+        question: "¿Qué advertencia formal explícita establece la introducción del Anexo E de la norma ISO/IEC 27701:2025 respecto al mapeo de la Tabla E.1?",
+        options: [
+          "A) Indica que cumplir un control de ISO 27018 certifica automáticamente el cumplimiento de ISO 27701 sin auditoría.",
+          "B) Establece que el mapeo es puramente indicativo y que un enlace entre disposiciones no significa en modo alguno que sean equivalentes.",
+          "C) Señala que la tabla tiene carácter vinculante y rango de ley para contratos internacionales.",
+          "D) Dictamina que los controles de ISO 29151 prevalecen sobre el Anexo A de ISO 27701."
+        ],
+        correct: 1,
+        justification: "Anexo E (Texto introductorio): 'The mapping shown in Table E.1 is purely indicative; a given link between these provisions does not mean they are equivalent'."
+      },
+      {
+        id: 52,
+        topic: "Tema 11",
+        category: "Teoría y Mapeo Normativo",
+        question: "En la correspondencia de la Tabla E.1, ¿a qué control específico de ISO/IEC 27018 mapea la restricción de marketing y publicidad del procesador (control B.2.2.4 de ISO 27701)?",
+        options: [
+          "A) Al control A.3.2 de ISO/IEC 27018.",
+          "B) Al control A.10.3 de ISO/IEC 27018.",
+          "C) Al control A.5.1 de ISO/IEC 27018.",
+          "D) A la cláusula 4 de ISO/IEC 27018."
+        ],
+        correct: 0,
+        justification: "Tabla E.1: La fila correspondiente a B.2.2.4 (Marketing and advertising use) vincula de forma exacta con el control 'A.3.2' de ISO/IEC 27018."
+      },
+      {
+        id: 53,
+        topic: "Tema 11",
+        category: "Teoría y Mapeo Normativo",
+        question: "Respecto a las cláusulas de requisitos de gestión (Cláusulas 4 a la 10) de ISO/IEC 27701:2025, ¿cuál es su correspondencia con ISO/IEC 27018 e ISO/IEC 29151 en la Tabla E.1?",
+        options: [
+          "A) Se corresponden punto por punto con los capítulos 4 al 10 de ambas normas.",
+          "B) Mapean como 'N/A' en su totalidad, debido a que ISO 27701 es un estándar de sistema de gestión (PIMS stand-alone), mientras que 27018 y 29151 son códigos de práctica y guías de control sin estructura de gestión de alto nivel.",
+          "C) Reemplazan automáticamente la política de seguridad del proveedor cloud.",
+          "D) Mapean únicamente a los requisitos de compras y finanzas corporativas."
+        ],
+        correct: 1,
+        justification: "Tabla E.1: Todas las cláusulas de gestión (4, 5, 6, 7, 8, 9 y 10) están catalogadas como 'N/A' frente a ISO/IEC 27018 e ISO/IEC 29151, ya que estas últimas son guías de buenas prácticas y controles, no normas de requisitos de sistemas de gestión (MSS)."
+      },
+      {
+        id: 54,
+        topic: "Tema 11",
+        category: "Teoría y Mapeo Normativo",
+        question: "En la Tabla E.1, ¿a qué control de ISO/IEC 27018 mapea la directriz B.2.4.3 (Return, transfer or disposal of PII / Devolución, transferencia o eliminación de PII al finalizar el servicio)?",
+        options: [
+          "A) Control A.2.1 de ISO/IEC 27018.",
+          "B) Control A.10.3 de ISO/IEC 27018.",
+          "C) Control A.12.2 de ISO/IEC 27018.",
+          "D) Control A.8.1 de ISO/IEC 27018."
+        ],
+        correct: 1,
+        justification: "Tabla E.1: La fila de B.2.4.3 mapea formalmente al control 'A.10.3' de ISO/IEC 27018 (Return, transfer or disposal of PII in public cloud)."
+      },
+      {
+        id: 55,
+        topic: "Tema 11",
+        category: "Casos Prácticos de Auditoría",
+        question: "CASO 1: Un banco decide migrar todo su core financiero a un proveedor cloud público (IaaS/PaaS). Como auditor líder de sistemas, deseas verificar que el proveedor implemente directrices específicas para evitar que su personal acceda a los datos de los clientes sin autorización o los utilice con otros fines. ¿Qué estándar internacional de referencia solicitarías auditar específicamente al proveedor cloud?",
+        options: [
+          "A) ISO/IEC 27018 (Código de prácticas para protección de PII en nubes públicas como PII Processor).",
+          "B) ISO/IEC 29151 orientado exclusivamente a clínicas dentales locales.",
+          "C) Únicamente el manual de usuario del servidor web Apache.",
+          "D) La norma ISO 14001 de gestión medioambiental."
+        ],
+        correct: 0,
+        justification: "ISO/IEC 27018 es el estándar por excelencia diseñado específicamente para auditar las garantías de seguridad y privacidad que un proveedor de nube pública (PII Processor) brinda a sus clientes respecto a la PII almacenada."
+      },
+      {
+        id: 56,
+        topic: "Tema 11",
+        category: "Casos Prácticos de Auditoría",
+        question: "CASO 2: Una empresa de desarrollo SaaS (PII Processor en la nube) recibe un requerimiento judicial de un tribunal civil solicitando la entrega de correos de un cliente. El proveedor entrega la información inmediatamente sin avisar al cliente, alegando que 'la orden judicial exime de avisar'. Al contrastar con B.2.5.5 de ISO 27701 y el control A.6.1 de ISO/IEC 27018, ¿qué dictamen emite el auditor?",
+        options: [
+          "A) Conforme: El procesador no tiene que avisar jamás a sus clientes sobre órdenes judiciales.",
+          "B) No Conforme: Salvo que la ley procesal penal prohíba expresamente la notificación para preservar la investigación, el procesador debe notificar oportunamente al cliente sobre cualquier solicitud legalmente vinculante de divulgación de PII.",
+          "C) Conforme, siempre que se haya cobrado una tarifa administrativa al tribunal.",
+          "D) No Conforme únicamente si los datos estaban cifrados con claves RSA."
+        ],
+        correct: 1,
+        justification: "Control B.2.5.5 / ISO 27018 control A.6.1: El encargado de tratamiento en la nube debe notificar al cliente sobre solicitudes vinculantes de revelación de PII, a menos que exista una prohibición legal expresa (ej. secreto de sumario penal)."
+      },
+      {
+        id: 57,
+        topic: "Tema 11",
+        category: "Casos Prácticos de Auditoría",
+        question: "CASO 3: Una aseguradora (PII Controller) recopila información médica sensible de sus asegurados y busca una guía exhaustiva de controles para proteger dicha PII durante todo el ciclo de vida (recolección, almacenamiento, acceso y borrado). Al comparar ISO/IEC 27018 frente a ISO/IEC 29151, ¿cuál es la norma adecuada para guiar su implementación y por qué?",
+        options: [
+          "A) ISO/IEC 27018, porque cualquier servidor conectado a Internet califica automáticamente como nube pública.",
+          "B) ISO/IEC 29151, porque es el código de práctica diseñado para que los responsables (PII Controllers) implementen controles de protección de PII en cualquier tipo de organización y arquitectura.",
+          "C) Ninguna de las dos, ya que las aseguradoras solo pueden utilizar la norma ISO 9001.",
+          "D) ISO/IEC 27018, porque la norma 29151 está prohibida para datos biométricos o de salud."
+        ],
+        correct: 1,
+        justification: "ISO/IEC 29151 proporciona un código de práctica amplio enfocado en PII Controllers con controles de ciclo de vida (mapeados en la columna ISO/IEC 29151 del Anexo E), a diferencia de 27018 que se limita a proveedores cloud processors."
+      },
+      {
+        id: 58,
+        topic: "Tema 11",
+        category: "Casos Prácticos de Auditoría",
+        question: "CASO 4: Un proveedor cloud de almacenamiento de archivos anuncia en su contrato que 'los clientes conservan la propiedad de sus archivos, pero al cancelar la suscripción, los archivos permanecerán archivados en cinta durante 5 años para seguridad del proveedor'. Al auditar bajo B.2.4.3 de ISO 27701 y A.10.3 de ISO 27018, ¿qué hallazgo se reporta?",
+        options: [
+          "A) No Conformidad: El procesador en la nube debe asegurar la capacidad de devolver, transferir o destruir de forma segura y completa la PII una vez culminado el contrato o servicio según las instrucciones del cliente, sin retenciones indebidas no pactadas.",
+          "B) Conformidad plena, pues archivar datos ajenos durante 5 años es una práctica de buena fe.",
+          "C) Observación subsanable únicamente si el cliente paga almacenamiento extra.",
+          "D) No Conformidad imputable exclusivamente a la empresa de telecomunicaciones."
+        ],
+        correct: 0,
+        justification: "Control B.2.4.3 y control A.10.3 de ISO 27018: Al terminar el servicio, el procesador debe garantizar la devolución o destrucción definitiva de los datos de los clientes y sus copias de respaldo, evitando la retención arbitraria."
+      },
+      {
+        id: 59,
+        topic: "Tema 11",
+        category: "Casos Prácticos de Auditoría",
+        question: "CASO 5: Durante una auditoría a una empresa SaaS de CRM, el auditor verifica que los datos en tránsito entre el cliente web y los microservicios en la nube viajan sin cifrado TLS en conexiones HTTP internas. El proveedor alega que 'dentro de la VPC de la nube no hace falta cifrado'. Al verificar B.2.4.4 de ISO 27701 y el control A.12.2 de ISO/IEC 27018, ¿cuál es la determinación técnica?",
+        options: [
+          "A) Conforme: Las nubes públicas son 100% impenetrables y no requieren cifrado en tránsito interno.",
+          "B) No Conforme: Se deben aplicar controles adecuados de transmisión de datos (incluyendo cifrado robusto y autenticación de extremos) para garantizar que la PII no sea interceptada ni comprometida durante su tránsito por redes de transmisión.",
+          "C) Desviación menor que se resuelve reiniciando el router virtual.",
+          "D) Conforme siempre que el personal del proveedor haya firmado un acuerdo NDA."
+        ],
+        correct: 1,
+        justification: "Control B.2.4.4 de ISO 27701 y control A.12.2 de ISO/IEC 27018: Exigen que la transmisión de PII a través de redes de comunicación esté sujeta a controles estrictos (como cifrado fuerte) que aseguren su integridad, confidencialidad y destino correcto."
+      },
+      {
+        id: 60,
+        topic: "Tema 11",
+        category: "Casos Prácticos de Auditoría",
+        question: "CASO 6: Una organización que obtuvo la certificación ISO/IEC 27018 en 2024 afirma en su portal institucional que 'su certificación ISO 27018 equivale automáticamente a estar certificada en ISO/IEC 27701:2025'. Como auditor de certificación, ¿cómo calificas esta afirmación?",
+        options: [
+          "A) Totalmente correcta, ya que el Anexo E fusiona ambas normas en un solo certificado comercial.",
+          "B) Incorrecta y engañosa: ISO/IEC 27018 es un código de prácticas complementario enfocado en controles para cloud processors, mientras que ISO/IEC 27701:2025 es un sistema de gestión auditable (PIMS stand-alone) que exige cumplir cláusulas de gestión (4 a 10) y controles organizacionales integrales.",
+          "C) Correcta únicamente si la empresa no maneja datos de menores de edad.",
+          "D) Correcta solo si la entidad reguladora de telecomunicaciones emitió una resolución de homologación."
+        ],
+        correct: 1,
+        justification: "ISO/IEC 27701:2025 (Edición 2) es un estándar independiente de sistema de gestión (PIMS). Tal como aclara el Anexo E, las correspondencias con ISO/IEC 27018 son puramente informativas y de buenas prácticas de control; no confieren equivalencia ni certificación automática de sistema de gestión."
+      }
+    ];
+
+    function getActiveQuestionPool() {
+      if (state.activeTopic === 'tema07') return questionsTema07;
+      if (state.activeTopic === 'tema08') return questionsTema08;
+      if (state.activeTopic === 'tema09') return questionsTema09;
+      if (state.activeTopic === 'tema10') return questionsTema10;
+      if (state.activeTopic === 'tema11') return questionsTema11;
+      return [...questionsTema07, ...questionsTema08, ...questionsTema09, ...questionsTema10, ...questionsTema11];
+    }
+
+    function getFilteredQuestions() {
+      const pool = getActiveQuestionPool();
+      if (state.currentFilter === 'Todos') return pool;
+      return pool.filter(q => q.category === state.currentFilter);
+    }
+
+    /**
+     * AUDIO
+     */
+    let audioCtx = null;
+    function getAudioContext() {
+      if (!audioCtx) {
+        const AudioClass = window.AudioContext || window.webkitAudioContext;
+        if (AudioClass) audioCtx = new AudioClass();
+      }
+      if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+      return audioCtx;
+    }
+
+    function playSound(type) {
+      if (!state.soundEnabled) return;
+      try {
+        const ctx = getAudioContext();
+        if (!ctx) return;
+        const now = ctx.currentTime;
+        if (type === 'correct') {
+          const o1 = ctx.createOscillator();
+          const g1 = ctx.createGain();
+          o1.frequency.setValueAtTime(1046.50, now);
+          g1.gain.setValueAtTime(0.12, now);
+          g1.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+          o1.connect(g1); g1.connect(ctx.destination);
+          o1.start(now); o1.stop(now + 0.18);
+
+          const o2 = ctx.createOscillator();
+          const g2 = ctx.createGain();
+          o2.frequency.setValueAtTime(1567.98, now + 0.08);
+          g2.gain.setValueAtTime(0.15, now + 0.08);
+          g2.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+          o2.connect(g2); g2.connect(ctx.destination);
+          o2.start(now + 0.08); o2.stop(now + 0.35);
+        } else {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(164.81, now);
+          osc.frequency.setValueAtTime(130.81, now + 0.1);
+          gain.gain.setValueAtTime(0.10, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
+          osc.connect(gain); gain.connect(ctx.destination);
+          osc.start(now); osc.stop(now + 0.28);
+        }
+      } catch (e) {}
+    }
+
+    function toggleSound() {
+      state.soundEnabled = !state.soundEnabled;
+      document.getElementById('soundIconOn').style.display = state.soundEnabled ? 'block' : 'none';
+      document.getElementById('soundIconOff').style.display = state.soundEnabled ? 'none' : 'block';
+    }
+
+    function startTimer() {
+      if (state.timerInterval) clearInterval(state.timerInterval);
+      state.timerInterval = setInterval(() => {
+        state.secondsElapsed++;
+        const mins = String(Math.floor(state.secondsElapsed / 60)).padStart(2, '0');
+        const secs = String(state.secondsElapsed % 60).padStart(2, '0');
+        const el = document.getElementById('examTimer');
+        if (el) el.textContent = `${mins}:${secs}`;
+      }, 1000);
+    }
+
+    /**
+     * CAMBIO DE TEMA / MÓDULO
+     */
+    function switchTopic(topicKey) {
+      state.activeTopic = topicKey;
+      state.currentFilter = 'Todos';
+      state.currentQuestionIndex = 0;
+
+      document.getElementById('btnTopicT7').classList.toggle('active', topicKey === 'tema07');
+      document.getElementById('btnTopicT8').classList.toggle('active', topicKey === 'tema08');
+      document.getElementById('btnTopicT9').classList.toggle('active', topicKey === 'tema09');
+      document.getElementById('btnTopicT10').classList.toggle('active', topicKey === 'tema10');
+      document.getElementById('btnTopicT11').classList.toggle('active', topicKey === 'tema11');
+      document.getElementById('btnTopicAll').classList.toggle('active', topicKey === 'ambos');
+
+      const subtitleEl = document.getElementById('headerSubtitle');
+      const standardBadgeEl = document.getElementById('headerStandardBadge');
+      const topicHeaderEl = document.getElementById('lblCurrentTopicHeader');
+
+      if (topicKey === 'tema07') {
+        standardBadgeEl.textContent = 'ISO/IEC 27701:2025 (ANEXO A)';
+        subtitleEl.textContent = 'Tema 07: Objetivos de control y controles de referencia al PIMS (Anexo A)';
+        topicHeaderEl.innerHTML = 'Módulo: <strong>Tema 07 — Anexo A (ISO/IEC 27701:2025)</strong>';
+      } else if (topicKey === 'tema08') {
+        standardBadgeEl.textContent = 'ISO/IEC 27701:2025 (ANEXO B)';
+        subtitleEl.textContent = 'Tema 08: Orientación de implementación para PII Controllers y Processors (Guías B.1, B.2, B.3)';
+        topicHeaderEl.innerHTML = 'Módulo: <strong>Tema 08 — Anexo B (Guías B.1, B.2 y B.3)</strong>';
+      } else if (topicKey === 'tema09') {
+        standardBadgeEl.textContent = 'ISO/IEC 29100 & ANEXO C (27701:2025)';
+        subtitleEl.textContent = 'Tema 09: Correspondencia con ISO/IEC 29100 y los 11 Principios de Privacidad (Tablas C.1 y C.2)';
+        topicHeaderEl.innerHTML = 'Módulo: <strong>Tema 09 — Mapeo ISO/IEC 29100 (Tablas C.1 y C.2)</strong>';
+      } else if (topicKey === 'tema10') {
+        standardBadgeEl.textContent = 'GDPR / RGPD & ANEXO D / SOFTEXPERT';
+        subtitleEl.textContent = 'Tema 10: Correspondencia con GDPR / RGPD y Herramientas SoftExpert (Anexo D ISO/IEC 27701:2025)';
+        topicHeaderEl.innerHTML = 'Módulo: <strong>Tema 10 — GDPR / RGPD & SoftExpert Compliance</strong>';
+      } else if (topicKey === 'tema11') {
+        standardBadgeEl.textContent = 'ISO 27018 & ISO 29151 (ANEXO E)';
+        subtitleEl.textContent = 'Tema 11: Correspondencia con ISO/IEC 27018 e ISO/IEC 29151 (Anexo E ISO/IEC 27701:2025)';
+        topicHeaderEl.innerHTML = 'Módulo: <strong>Tema 11 — Anexo E: ISO/IEC 27018 & ISO/IEC 29151</strong>';
+      } else {
+        standardBadgeEl.textContent = 'ISO/IEC 27701:2025 (COMPLETO)';
+        subtitleEl.textContent = 'Simulador Integral de Examen Parcial — Temas 07 al 11 (60 Preguntas)';
+        topicHeaderEl.innerHTML = 'Módulo: <strong>Evaluación Integral Parcial (60 Preguntas PIMS & Compliance)</strong>';
+      }
+
+      renderFilterButtons();
+      updateMetricsUI();
+      if (state.viewMode === 'focus') renderFocusMode();
+      else renderListView();
+    }
+
+    function renderFilterButtons() {
+      const container = document.getElementById('filterButtonGroup');
+      const pool = getActiveQuestionPool();
+
+      // Collect categories
+      const categories = ['Todos'];
+      pool.forEach(q => {
+        if (!categories.includes(q.category)) categories.push(q.category);
+      });
+
+      let html = `<span style="font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: var(--text-dark); margin-right: 4px;">Categoría:</span>`;
+
+      categories.forEach(cat => {
+        const count = cat === 'Todos' ? pool.length : pool.filter(q => q.category === cat).length;
+        const isActive = state.currentFilter === cat ? 'active' : '';
+        html += `
+          <button class="filter-btn ${isActive}" onclick="setFilter('${cat}')">
+            <span>${cat}</span>
+            <span class="filter-count">${count}</span>
+          </button>
+        `;
+      });
+
+      container.innerHTML = html;
+    }
+
+    function calculateStats() {
+      const pool = getActiveQuestionPool();
+      const total = pool.length;
+      let answeredCount = 0;
+      let correctCount = 0;
+      let incorrectCount = 0;
+
+      pool.forEach(q => {
+        if (state.userAnswers.hasOwnProperty(q.id)) {
+          answeredCount++;
+          if (state.userAnswers[q.id] === q.correct) correctCount++;
+          else incorrectCount++;
+        }
+      });
+
+      const pendingCount = total - answeredCount;
+      const progressPercent = Math.round((answeredCount / total) * 100);
+      const accuracyPercent = total > 0 ? Math.round((correctCount / total) * 100) : 0;
+      const grade = ((correctCount / total) * 20).toFixed(1);
+
+      return { total, answeredCount, correctCount, incorrectCount, pendingCount, progressPercent, accuracyPercent, grade };
+    }
+
+    function updateMetricsUI() {
+      const stats = calculateStats();
+
+      document.getElementById('statAnswered').textContent = stats.answeredCount;
+      document.getElementById('statTotalQ').textContent = stats.total;
+      document.getElementById('statCorrect').textContent = stats.correctCount;
+      document.getElementById('statIncorrect').textContent = stats.incorrectCount;
+      document.getElementById('statGrade').textContent = stats.grade;
+
+      document.getElementById('progressPercent').textContent = `${stats.progressPercent}%`;
+      document.getElementById('lblCorrectCount').textContent = stats.correctCount;
+      document.getElementById('lblIncorrectCount').textContent = stats.incorrectCount;
+      document.getElementById('lblPendingCount').textContent = stats.pendingCount;
+
+      const correctPct = (stats.correctCount / stats.total) * 100;
+      const incorrectPct = (stats.incorrectCount / stats.total) * 100;
+      document.getElementById('barCorrect').style.width = `${correctPct}%`;
+      document.getElementById('barIncorrect').style.width = `${incorrectPct}%`;
+
+      const retryBtn = document.getElementById('btnRetryWrong');
+      const wrongCountLbl = document.getElementById('lblWrongBtnCount');
+      if (stats.incorrectCount > 0) {
+        retryBtn.style.display = 'inline-flex';
+        wrongCountLbl.textContent = stats.incorrectCount;
+      } else {
+        retryBtn.style.display = 'none';
+      }
+
+      renderNavigationGrid();
+    }
+
+    function renderNavigationGrid() {
+      const grid = document.getElementById('questionGridNav');
+      if (!grid) return;
+      grid.innerHTML = '';
+
+      const pool = getActiveQuestionPool();
+      const currentFiltered = getFilteredQuestions();
+
+      pool.forEach((q, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'grid-btn';
+
+        const isAnswered = state.userAnswers.hasOwnProperty(q.id);
+        const isCorrect = isAnswered && state.userAnswers[q.id] === q.correct;
+        const isIncorrect = isAnswered && state.userAnswers[q.id] !== q.correct;
+
+        const currentQ = currentFiltered[state.currentQuestionIndex];
+        if (state.viewMode === 'focus' && currentQ && currentQ.id === q.id) {
+          btn.classList.add('current');
+        }
+
+        if (isCorrect) btn.classList.add('correct');
+        else if (isIncorrect) btn.classList.add('incorrect');
+
+        // Relative number within current exam view
+        btn.textContent = idx + 1;
+        btn.title = `Pregunta ${idx + 1} (${q.topic} - ${q.category})`;
+
+        btn.onclick = () => {
+          if (state.viewMode === 'focus') {
+            const filteredIndex = currentFiltered.findIndex(item => item.id === q.id);
+            if (filteredIndex !== -1) {
+              state.currentQuestionIndex = filteredIndex;
+            } else {
+              setFilter('Todos');
+              state.currentQuestionIndex = idx;
+            }
+            renderFocusMode();
+          } else {
+            let el = document.getElementById(`card-q-${q.id}`);
+            if (!el) {
+              setFilter('Todos');
+              el = document.getElementById(`card-q-${q.id}`);
+            }
+            if (el) {
+              el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              el.style.boxShadow = '0 0 25px rgba(6, 182, 212, 0.4)';
+              setTimeout(() => el.style.boxShadow = '', 1200);
+            }
+          }
+        };
+
+        grid.appendChild(btn);
+      });
+    }
+
+    function handleSelectOption(questionId, selectedIdx) {
+      if (state.userAnswers.hasOwnProperty(questionId)) return;
+
+      const pool = getActiveQuestionPool();
+      const q = pool.find(item => item.id === questionId);
+      if (!q) return;
+
+      state.userAnswers[questionId] = selectedIdx;
+
+      if (selectedIdx === q.correct) playSound('correct');
+      else playSound('incorrect');
+
+      if (state.viewMode === 'focus') renderFocusMode();
+      else renderListView();
+
+      updateMetricsUI();
+
+      const stats = calculateStats();
+      if (stats.answeredCount === stats.total) {
+        setTimeout(() => openReportModal(), 800);
+      }
+    }
+
+    function buildQuestionHTML(q, indexWithinView, totalInView) {
+      const isAnswered = state.userAnswers.hasOwnProperty(q.id);
+      const userSelected = state.userAnswers[q.id];
+      const isCorrect = isAnswered && userSelected === q.correct;
+
+      let tagCatClass = 'tag-teoria';
+      if (q.category === 'Casos Prácticos de Auditoría') tagCatClass = 'tag-casos';
+      else if (q.category === 'Teoría de Implementación') tagCatClass = 'tag-implementacion';
+
+      let statusBadge = `
+        <span class="question-status-badge status-unanswered">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>
+          Pendiente
+        </span>
+      `;
+      if (isAnswered) {
+        if (isCorrect) {
+          statusBadge = `
+            <span class="question-status-badge status-correct">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              Conforme (Correcta)
+            </span>
+          `;
+        } else {
+          statusBadge = `
+            <span class="question-status-badge status-incorrect">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              No Conformidad (Incorrecta)
+            </span>
+          `;
+        }
+      }
+
+      let promptText = q.question;
+      if (promptText.startsWith("CASO ")) {
+        promptText = promptText.replace(/^(CASO \d+:)/, '<span class="prompt-highlight">$1</span>');
+      }
+
+      const letters = ['A', 'B', 'C', 'D'];
+      const optionsHTML = q.options.map((optText, optIdx) => {
+        let optStateClass = '';
+        let isOptionDisabled = isAnswered ? 'disabled' : '';
+        let statusTag = '';
+
+        if (isAnswered) {
+          if (optIdx === q.correct) {
+            if (userSelected === optIdx) {
+              optStateClass = 'state-correct';
+              statusTag = `
+                <div class="option-tag-status">
+                  <span class="badge-correct-indicator">✓ Correcta</span>
+                </div>
+              `;
+            } else {
+              optStateClass = 'state-highlight-correct';
+              statusTag = `
+                <div class="option-tag-status">
+                  <span class="badge-correct-indicator">★ Respuesta Correcta</span>
+                </div>
+              `;
+            }
+          } else if (userSelected === optIdx) {
+            optStateClass = 'state-incorrect';
+            statusTag = `
+              <div class="option-tag-status">
+                <span style="font-size: 0.68rem; font-weight:700; color: var(--accent-rose); background: rgba(244,63,94,0.15); border: 1px solid rgba(244,63,94,0.3); padding: 2px 8px; border-radius: 4px;">
+                  ✗ Tu Selección
+                </span>
+              </div>
+            `;
+          } else {
+            optStateClass = 'state-faded';
+          }
+        }
+
+        const cleanText = optText.replace(/^[A-D]\)\s*/, '');
+
+        return `
+          <button 
+            type="button"
+            class="option-btn ${optStateClass}" 
+            ${isOptionDisabled}
+            onclick="handleSelectOption(${q.id}, ${optIdx})"
+          >
+            <span class="option-letter">${letters[optIdx]}</span>
+            <span class="option-text">${cleanText}</span>
+            ${statusTag}
+          </button>
+        `;
+      }).join('');
+
+      let justificationHTML = '';
+      if (isAnswered) {
+        justificationHTML = `
+          <div class="justification-box">
+            <div class="justification-header">
+              <span class="justification-badge">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                JUSTIFICACIÓN AUDITORA & CITA NORMATIVA
+              </span>
+              <span class="justification-title">${q.topic === 'Tema 07' ? 'ISO/IEC 27701:2025 (ANEXO A)' : 'ISO/IEC 27701:2025 (ANEXO B)'}</span>
+            </div>
+            <div class="justification-body">
+              ${q.justification}
+            </div>
+          </div>
+        `;
+      }
+
+      let footerHTML = '';
+      if (state.viewMode === 'focus') {
+        const hasPrev = indexWithinView > 0;
+        const hasNext = indexWithinView < totalInView - 1;
+
+        footerHTML = `
+          <div class="card-footer">
+            <div style="font-size: 0.8rem; color: var(--text-muted); font-family: var(--font-mono);">
+              Pregunta ${indexWithinView + 1} de ${totalInView} (${q.topic} - Control #${q.id})
+            </div>
+            <div style="display: flex; gap: 8px;">
+              <button 
+                class="btn-nav" 
+                ${!hasPrev ? 'disabled' : ''} 
+                onclick="navigateQuestion(-1)"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+                Anterior
+              </button>
+              
+              ${hasNext ? `
+                <button 
+                  class="btn-nav btn-nav-primary" 
+                  onclick="navigateQuestion(1)"
+                >
+                  Siguiente
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                </button>
+              ` : `
+                <button 
+                  class="btn-finish-exam" 
+                  onclick="openReportModal()"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                  Finalizar y Ver Dictamen
+                </button>
+              `}
+            </div>
+          </div>
+        `;
+      }
+
+      return `
+        <div class="question-card" id="card-q-${q.id}">
+          <div class="question-header">
+            <div class="question-tags">
+              <span class="tag-id">${q.topic} - #${q.id}</span>
+              <span class="tag-category ${tagCatClass}">${q.category}</span>
+            </div>
+            ${statusBadge}
+          </div>
+
+          <div class="question-prompt">
+            ${promptText}
+          </div>
+
+          <div class="options-list">
+            ${optionsHTML}
+          </div>
+
+          ${justificationHTML}
+          ${footerHTML}
+        </div>
+      `;
+    }
+
+    function renderFocusMode() {
+      const filtered = getFilteredQuestions();
+      const container = document.getElementById('singleQuestionArea');
+      if (!container) return;
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="question-card" style="text-align: center; padding: 40px;">
+            <p style="color: var(--text-muted);">No hay preguntas disponibles para el filtro seleccionado.</p>
+          </div>
+        `;
+        return;
+      }
+
+      if (state.currentQuestionIndex >= filtered.length) state.currentQuestionIndex = filtered.length - 1;
+      if (state.currentQuestionIndex < 0) state.currentQuestionIndex = 0;
+
+      const currentQ = filtered[state.currentQuestionIndex];
+      container.innerHTML = buildQuestionHTML(currentQ, state.currentQuestionIndex, filtered.length);
+      renderNavigationGrid();
+    }
+
+    function renderListView() {
+      const filtered = getFilteredQuestions();
+      const container = document.getElementById('listViewLayout');
+      if (!container) return;
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="question-card" style="text-align: center; padding: 40px;">
+            <p style="color: var(--text-muted);">No hay preguntas en esta categoría.</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = filtered.map((q, idx) => buildQuestionHTML(q, idx, filtered.length)).join('');
+      renderNavigationGrid();
+    }
+
+    function navigateQuestion(offset) {
+      const filtered = getFilteredQuestions();
+      const newIdx = state.currentQuestionIndex + offset;
+      if (newIdx >= 0 && newIdx < filtered.length) {
+        state.currentQuestionIndex = newIdx;
+        renderFocusMode();
+      }
+    }
+
+    function setViewMode(mode) {
+      state.viewMode = mode;
+      const btnFocus = document.getElementById('btnModeFocus');
+      const btnList = document.getElementById('btnModeList');
+      const focusLayout = document.getElementById('focusViewLayout');
+      const listLayout = document.getElementById('listViewLayout');
+
+      if (mode === 'focus') {
+        btnFocus.classList.add('active');
+        btnList.classList.remove('active');
+        focusLayout.style.display = 'grid';
+        listLayout.style.display = 'none';
+        renderFocusMode();
+      } else {
+        btnFocus.classList.remove('active');
+        btnList.classList.add('active');
+        focusLayout.style.display = 'none';
+        listLayout.style.display = 'flex';
+        renderListView();
+      }
+    }
+
+    function setFilter(filterName) {
+      state.currentFilter = filterName;
+      state.currentQuestionIndex = 0;
+      renderFilterButtons();
+
+      if (state.viewMode === 'focus') renderFocusMode();
+      else renderListView();
+    }
+
+    function retryIncorrectOnly() {
+      const pool = getActiveQuestionPool();
+      const incorrectIds = [];
+      pool.forEach(q => {
+        if (state.userAnswers.hasOwnProperty(q.id) && state.userAnswers[q.id] !== q.correct) {
+          incorrectIds.push(q.id);
+        }
+      });
+
+      if (incorrectIds.length === 0) return;
+
+      incorrectIds.forEach(id => {
+        delete state.userAnswers[id];
+      });
+
+      const firstFailedIdx = pool.findIndex(q => q.id === incorrectIds[0]);
+      if (firstFailedIdx !== -1) {
+        setFilter('Todos');
+        state.currentQuestionIndex = firstFailedIdx;
+      }
+
+      updateMetricsUI();
+      if (state.viewMode === 'focus') renderFocusMode();
+      else renderListView();
+    }
+
+    function resetExam() {
+      const pool = getActiveQuestionPool();
+      const hasAny = pool.some(q => state.userAnswers.hasOwnProperty(q.id));
+      if (hasAny) {
+        const confirmReset = confirm("¿Deseas reiniciar las respuestas de este módulo y comenzar de nuevo?");
+        if (!confirmReset) return;
+      }
+
+      pool.forEach(q => {
+        delete state.userAnswers[q.id];
+      });
+
+      state.currentQuestionIndex = 0;
+      state.secondsElapsed = 0;
+      updateMetricsUI();
+
+      if (state.viewMode === 'focus') renderFocusMode();
+      else renderListView();
+    }
+
+    function openReportModal() {
+      const stats = calculateStats();
+      const modal = document.getElementById('reportModal');
+      const pool = getActiveQuestionPool();
+
+      document.getElementById('modalFinalGrade').textContent = stats.grade;
+      document.getElementById('modalFinalPercent').textContent = `${stats.accuracyPercent}% de efectividad auditora`;
+      document.getElementById('modalCountCorrect').textContent = `${stats.correctCount} / ${stats.total}`;
+      document.getElementById('modalCountIncorrect').textContent = `${stats.incorrectCount} / ${stats.total}`;
+
+      const mins = String(Math.floor(state.secondsElapsed / 60)).padStart(2, '0');
+      const secs = String(state.secondsElapsed % 60).padStart(2, '0');
+      document.getElementById('modalTimeSpent').textContent = `${mins}:${secs}`;
+
+      // Dynamic domain breakdown
+      const breakdownEl = document.getElementById('modalDomainBreakdown');
+      const categories = [];
+      pool.forEach(q => {
+        if (!categories.includes(q.category)) categories.push(q.category);
+      });
+
+      breakdownEl.innerHTML = categories.map(cat => {
+        const catQuestions = pool.filter(q => q.category === cat);
+        const catCorrect = catQuestions.filter(q => state.userAnswers[q.id] === q.correct).length;
+        const catPct = Math.round((catCorrect / catQuestions.length) * 100);
+        return `
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span>${cat}:</span>
+            <strong style="font-family: var(--font-mono); color: var(--accent-cyan);">${catCorrect} / ${catQuestions.length} (${catPct}%)</strong>
+          </div>
+        `;
+      }).join('');
+
+      const gradeNum = parseFloat(stats.grade);
+      const stampEl = document.getElementById('verdictStamp');
+      const verdictTextEl = document.getElementById('modalVerdictText');
+
+      if (gradeNum >= 17) {
+        stampEl.className = 'verdict-stamp verdict-pass';
+        stampEl.innerHTML = `
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          DICTAMEN: CERTIFICACIÓN CONFORME (AUDITOR LÍDER)
+        `;
+        verdictTextEl.innerHTML = `
+          <strong>Sobresaliente:</strong> El postulante demuestra un dominio exhaustivo de las exigencias normativas y guías de implementación de la norma ISO/IEC 27701:2025. Discierne con precisión técnica entre roles (Controller vs Processor), controles del Anexo A y directrices del Anexo B. Apto para liderar auditorías de certificación PIMS.
+        `;
+      } else if (gradeNum >= 14) {
+        stampEl.className = 'verdict-stamp verdict-pass';
+        stampEl.innerHTML = `
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          DICTAMEN: CONFORME CON OBSERVACIONES MENORES
+        `;
+        verdictTextEl.innerHTML = `
+          <strong>Aprobado:</strong> El estudiante alcanza el nivel de suficiencia requerido para el 8vo ciclo en Auditoría de Sistemas. Se observan pequeñas oportunidades de mejora en controles específicos de gestión de incidentes y retención de PII.
+        `;
+      } else {
+        stampEl.className = 'verdict-stamp verdict-fail';
+        stampEl.innerHTML = `
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          DICTAMEN: NO CONFORME — NO ACREDITADO (REPROBADO)
+        `;
+        verdictTextEl.innerHTML = `
+          <strong>No Conformidad Mayor:</strong> La puntuación obtenida (${stats.grade}/20) no cumple con el umbral mínimo aprobatorio (14.0). Se detectaron fallos en la tipificación de incidentes, pruebas en entornos de prueba (QA) o facultades del DPO. Se requiere repaso exhaustivo antes del examen parcial.
+        `;
+      }
+
+      modal.classList.add('show');
+    }
+
+    function closeReportModal() {
+      document.getElementById('reportModal').classList.remove('show');
+    }
+
+    window.addEventListener('keydown', (e) => {
+      if (document.getElementById('reportModal').classList.contains('show')) {
+        if (e.key === 'Escape') closeReportModal();
+        return;
+      }
+
+      if (state.viewMode === 'focus') {
+        if (e.key === 'ArrowLeft') navigateQuestion(-1);
+        else if (e.key === 'ArrowRight') navigateQuestion(1);
+      }
+
+      const key = e.key.toUpperCase();
+      const keyMap = { 'A': 0, '1': 0, 'B': 1, '2': 1, 'C': 2, '3': 2, 'D': 3, '4': 3 };
+      if (keyMap.hasOwnProperty(key)) {
+        if (state.viewMode === 'focus') {
+          const filtered = getFilteredQuestions();
+          const currentQ = filtered[state.currentQuestionIndex];
+          if (currentQ) handleSelectOption(currentQ.id, keyMap[key]);
+        }
+      }
+    });
+
+    document.getElementById('reportModal').addEventListener('click', (e) => {
+      if (e.target.id === 'reportModal') closeReportModal();
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+      renderFilterButtons();
+      updateMetricsUI();
+      renderFocusMode();
+      startTimer();
+    });
+  </script>
+</body>
+</html>

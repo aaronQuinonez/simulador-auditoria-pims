@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+  <title>Simulador de Auditoría de Sistemas - Unidad 2</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-main: #0a0e17;
+      --bg-card: #101726;
+      --bg-card-hover: #162238;
+      --bg-surface: #1c273c;
+      --bg-surface-elevated: #26354f;
+
+      --border-subtle: #1c283f;
+      --border-light: #334155;
+      --border-accent: #06b6d4;
+
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dark: #64748b;
+
+      --accent-cyan: #06b6d4;
+      --accent-cyan-glow: rgba(6, 182, 212, 0.25);
+      --accent-blue: #3b82f6;
+      --accent-blue-glow: rgba(59, 130, 246, 0.25);
+      --accent-emerald: #10b981;
+      --accent-emerald-glow: rgba(16, 185, 129, 0.25);
+      --accent-rose: #ef4444;
+      --accent-amber: #f59e0b;
+      --accent-purple: #8b5cf6;
+
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-xl: 22px;
+
+      --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
+      --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+      --shadow-lg: 0 12px 30px rgba(0, 0, 0, 0.6);
+
+      --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-mono: "Fira Code", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      width: 100%;
+      max-width: 100vw;
+      overflow-x: hidden;
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    button:focus-visible, a:focus-visible {
+      outline: 2px solid var(--accent-cyan);
+      outline-offset: 2px;
+    }
+
+    /* Ambient Background Glow */
+    .ambient-glow {
+      position: fixed;
+      top: -120px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 800px;
+      height: 400px;
+      background: radial-gradient(circle, rgba(6, 182, 212, 0.12) 0%, rgba(59, 130, 246, 0.08) 40%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Top Banner / Navbar */
+    header {
+      background: rgba(16, 23, 38, 0.92);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-subtle);
+      position: sticky;
+      top: 0;
+      z-index: 900;
+      width: 100%;
+    }
+
+    .nav-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: clamp(12px, 2vw, 16px) clamp(16px, 3vw, 24px);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .brand-icon {
+      width: 44px;
+      height: 44px;
+      min-width: 44px;
+      background: linear-gradient(135deg, rgba(6, 182, 212, 0.25), rgba(59, 130, 246, 0.3));
+      border: 1px solid rgba(6, 182, 212, 0.45);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent-cyan);
+      box-shadow: 0 0 20px rgba(6, 182, 212, 0.25);
+    }
+
+    .brand-text h1 {
+      font-size: clamp(1rem, 2.5vw, 1.25rem);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .brand-badge {
+      display: inline-flex;
+      align-items: center;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 9999px;
+      background: rgba(6, 182, 212, 0.15);
+      color: var(--accent-cyan);
+      border: 1px solid rgba(6, 182, 212, 0.35);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .brand-text p {
+      font-size: clamp(0.72rem, 1.8vw, 0.82rem);
+      color: var(--text-muted);
+    }
+
+    .header-links {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-header-integral {
+      min-height: 44px;
+      padding: 0 16px;
+      background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+      color: #ffffff;
+      text-decoration: none;
+      font-size: 0.82rem;
+      font-weight: 700;
+      border-radius: var(--radius-md);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 4px 14px var(--accent-cyan-glow);
+      transition: all 0.2s ease;
+      touch-action: manipulation;
+    }
+
+    .btn-header-integral:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(6, 182, 212, 0.4);
+    }
+
+    /* Main Container */
+    main {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: clamp(20px, 4vw, 40px) clamp(16px, 3vw, 24px);
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Hero Section */
+    .hero {
+      text-align: center;
+      margin-bottom: clamp(32px, 5vw, 48px);
+    }
+
+    .hero-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(6, 182, 212, 0.1);
+      border: 1px solid rgba(6, 182, 212, 0.3);
+      padding: 6px 14px;
+      border-radius: 9999px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--accent-cyan);
+      margin-bottom: 16px;
+    }
+
+    .hero h2 {
+      font-size: clamp(1.8rem, 4.5vw, 2.75rem);
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      line-height: 1.18;
+      margin-bottom: 14px;
+      background: linear-gradient(180deg, #ffffff 30%, #94a3b8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero p {
+      max-width: 760px;
+      margin: 0 auto;
+      font-size: clamp(0.95rem, 2vw, 1.1rem);
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    /* Syllabus Timeline Ribbon */
+    .syllabus-section {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-xl);
+      padding: clamp(18px, 3vw, 26px);
+      margin-bottom: clamp(28px, 4vw, 40px);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .syllabus-header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 18px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .syllabus-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--accent-cyan);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .syllabus-stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+    }
+
+    .syllabus-stats span strong {
+      color: var(--text-main);
+    }
+
+    .timeline-strip {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+    }
+
+    @media (max-width: 820px) {
+      .timeline-strip {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 480px) {
+      .timeline-strip {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .timeline-step {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 12px 14px;
+      position: relative;
+      transition: all 0.2s ease;
+    }
+
+    .timeline-step:hover {
+      border-color: var(--accent-cyan);
+      transform: translateY(-2px);
+    }
+
+    .step-week {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--accent-cyan);
+      text-transform: uppercase;
+      margin-bottom: 2px;
+    }
+
+    .step-norm {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--text-main);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .step-sub {
+      font-size: 0.72rem;
+      color: var(--text-dark);
+      margin-top: 2px;
+    }
+
+    /* Blocks Grid */
+    .blocks-grid-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .blocks-grid-header h3 {
+      font-size: clamp(1.1rem, 2.5vw, 1.35rem);
+      font-weight: 800;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .blocks-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+      margin-bottom: clamp(28px, 4vw, 40px);
+    }
+
+    @media (max-width: 840px) {
+      .blocks-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Block Card */
+    .block-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-xl);
+      padding: clamp(20px, 3.5vw, 28px);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .block-card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: var(--card-border-accent, var(--border-light));
+      transition: width 0.25s ease;
+    }
+
+    .block-card:hover {
+      border-color: var(--card-hover-border, var(--accent-cyan));
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .block-card:hover::before {
+      width: 6px;
+    }
+
+    /* Color theming per block */
+    .card-b1 { --card-border-accent: var(--accent-cyan); --card-hover-border: var(--accent-cyan); }
+    .card-b2 { --card-border-accent: var(--accent-emerald); --card-hover-border: var(--accent-emerald); }
+    .card-b3 { --card-border-accent: var(--accent-purple); --card-hover-border: var(--accent-purple); }
+    .card-b4 { --card-border-accent: var(--accent-blue); --card-hover-border: var(--accent-blue); }
+    .card-b5 { --card-border-accent: #22d3ee; --card-hover-border: #22d3ee; }
+
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .block-tag {
+      font-family: var(--font-mono);
+      font-size: 0.74rem;
+      font-weight: 700;
+      color: var(--card-border-accent, var(--accent-cyan));
+      letter-spacing: 0.05em;
+    }
+
+    .week-pill {
+      font-size: 0.68rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 9999px;
+      background: var(--bg-surface);
+      color: var(--text-muted);
+      border: 1px solid var(--border-subtle);
+      text-transform: uppercase;
+      font-family: var(--font-mono);
+    }
+
+    .block-title {
+      font-size: clamp(1.05rem, 2.2vw, 1.25rem);
+      font-weight: 700;
+      color: var(--text-main);
+      line-height: 1.4;
+      margin-bottom: 12px;
+    }
+
+    .badge-cloud {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+
+    .norm-badge {
+      font-size: 0.68rem;
+      font-family: var(--font-mono);
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 4px;
+      background: var(--bg-surface);
+      color: var(--text-muted);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .block-desc {
+      font-size: clamp(0.85rem, 1.8vw, 0.92rem);
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin-bottom: 20px;
+      flex: 1;
+    }
+
+    .block-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border-subtle);
+      margin-top: auto;
+    }
+
+    .block-info-pills {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.76rem;
+      color: var(--text-dark);
+      font-family: var(--font-mono);
+    }
+
+    .btn-block-action {
+      min-height: 48px;
+      padding: 10px 20px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      color: var(--text-main);
+      text-decoration: none;
+      font-size: 0.88rem;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+      touch-action: manipulation;
+    }
+
+    .btn-block-action:hover {
+      background: var(--card-border-accent, var(--accent-cyan));
+      color: #042f2e;
+      border-color: var(--card-border-accent, var(--accent-cyan));
+      box-shadow: 0 4px 14px rgba(6, 182, 212, 0.3);
+    }
+
+    /* Integral Full-Exam Card */
+    .integral-card {
+      grid-column: 1 / -1;
+      background: linear-gradient(135deg, rgba(16, 23, 38, 0.95), rgba(22, 34, 56, 0.95));
+      border: 1.5px solid rgba(6, 182, 212, 0.4);
+      border-radius: var(--radius-xl);
+      padding: clamp(24px, 4vw, 36px);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+      box-shadow: 0 10px 30px rgba(6, 182, 212, 0.15);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .integral-card::after {
+      content: "";
+      position: absolute;
+      top: -50%;
+      right: -10%;
+      width: 300px;
+      height: 300px;
+      background: radial-gradient(circle, rgba(6, 182, 212, 0.2) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .integral-info {
+      max-width: 650px;
+    }
+
+    .integral-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(6, 182, 212, 0.2);
+      border: 1px solid var(--accent-cyan);
+      padding: 4px 12px;
+      border-radius: 9999px;
+      font-size: 0.74rem;
+      font-weight: 800;
+      color: var(--accent-cyan);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 12px;
+    }
+
+    .integral-title {
+      font-size: clamp(1.25rem, 2.8vw, 1.6rem);
+      font-weight: 800;
+      color: #ffffff;
+      margin-bottom: 8px;
+    }
+
+    .integral-desc {
+      font-size: clamp(0.88rem, 1.8vw, 0.96rem);
+      color: #cbd5e1;
+      line-height: 1.6;
+    }
+
+    .btn-integral-main {
+      min-height: 52px;
+      padding: 12px 28px;
+      background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+      color: #ffffff;
+      text-decoration: none;
+      font-size: 0.96rem;
+      font-weight: 800;
+      border-radius: var(--radius-md);
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 6px 20px var(--accent-cyan-glow);
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      touch-action: manipulation;
+    }
+
+    .btn-integral-main:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(6, 182, 212, 0.45);
+    }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid var(--border-subtle);
+      background: var(--bg-card);
+      padding: clamp(24px, 4vw, 36px) clamp(16px, 3vw, 24px);
+      text-align: center;
+    }
+
+    .footer-content {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .footer-meta {
+      font-size: 0.8rem;
+      color: var(--text-dark);
+      font-family: var(--font-mono);
+      margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="ambient-glow"></div>
+
+  <!-- Header -->
+  <header>
+    <div class="nav-container">
+      <a href="index.html" class="brand">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="24" height="24">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            <path d="m9 12 2 2 4-4"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h1>
+            AUDIT-SIM // UNIDAD 2
+            <span class="brand-badge">PIMS & PRIVACIDAD</span>
+          </h1>
+          <p>Portal de Simuladores de Evaluación — Auditoría de Sistemas (FIIS)</p>
+        </div>
+      </a>
+
+      <div class="header-links">
+        <a href="integral.html" class="btn-header-integral" title="Iniciar Simulador Completo (60 preguntas)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          Simulador Integral (60 Q)
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- Hero Header -->
+    <section class="hero">
+      <div class="hero-tag">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <span>Examen Parcial 2 — Auditoría de Sistemas</span>
+      </div>
+      <h2>Simulador de Auditoría de Sistemas<br>Unidad 2: PIMS & Privacidad</h2>
+      <p>
+        Entorno interactivo para estudiantes de 8vo ciclo de Ingeniería de Sistemas. Evalúa con rigor técnico los marcos internacionales ISO/IEC 27701:2025, GDPR, ISO/IEC 29100, ISO/IEC 27018 e ISO/IEC 29151 con retroalimentación normativa inmediata.
+      </p>
+    </section>
+
+    <!-- Syllabus Timeline Ribbon -->
+    <section class="syllabus-section">
+      <div class="syllabus-header">
+        <div class="syllabus-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+          <span>Estructura Temática del Sílabo (Semanas 7 a 11)</span>
+        </div>
+        <div class="syllabus-stats">
+          <span>Módulos: <strong>5 Bloques</strong></span>
+          <span>Total: <strong>60 Preguntas</strong></span>
+          <span>Aprobatorio: <strong>≥ 14.0 pts (70%)</strong></span>
+        </div>
+      </div>
+
+      <div class="timeline-strip">
+        <div class="timeline-step">
+          <div class="step-week">Semana 07</div>
+          <div class="step-norm">Anexo A (27701)</div>
+          <div class="step-sub">Controles PIMS & SoA</div>
+        </div>
+        <div class="timeline-step">
+          <div class="step-week">Semana 08</div>
+          <div class="step-norm">Anexo B (27701)</div>
+          <div class="step-sub">Directrices B.1, B.2, B.3</div>
+        </div>
+        <div class="timeline-step">
+          <div class="step-week">Semana 09</div>
+          <div class="step-norm">Anexo C (29100)</div>
+          <div class="step-sub">11 Principios Privacidad</div>
+        </div>
+        <div class="timeline-step">
+          <div class="step-week">Semana 10</div>
+          <div class="step-norm">Anexo D (GDPR)</div>
+          <div class="step-sub">RGPD & SoftExpert</div>
+        </div>
+        <div class="timeline-step">
+          <div class="step-week">Semana 11</div>
+          <div class="step-norm">Anexo E (Cloud)</div>
+          <div class="step-sub">ISO 27018 & 29151</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Blocks Grid -->
+    <section>
+      <div class="blocks-grid-header">
+        <h3>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          <span>Módulos de Autoevaluación por Bloque</span>
+        </h3>
+      </div>
+
+      <div class="blocks-grid">
+        <!-- Bloque 1 -->
+        <article class="block-card card-b1">
+          <div class="card-top">
+            <span class="block-tag">BLOQUE 01</span>
+            <span class="week-pill">Semana 07</span>
+          </div>
+          <h4 class="block-title">Tema 07: Objetivos de control y controles de referencia al PIMS</h4>
+          <div class="badge-cloud">
+            <span class="norm-badge">ISO/IEC 27701:2025</span>
+            <span class="norm-badge">Anexo A</span>
+            <span class="norm-badge">Cláusula 4.1</span>
+            <span class="norm-badge">SoA</span>
+          </div>
+          <p class="block-desc">
+            Segregación obligatoria de roles cuando se actúa simultáneamente como Controller y Processor. Criterios de exclusión en la Declaración de Aplicabilidad (SoA) y evaluación de controles organizacionales A.1 a A.3.
+          </p>
+          <div class="block-footer">
+            <div class="block-info-pills">
+              <span>● 12 Preguntas</span>
+              <span>● Teoría & Casos</span>
+            </div>
+            <a href="bloque1.html" class="btn-block-action">
+              Iniciar Bloque 1
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+            </a>
+          </div>
+        </article>
+
+        <!-- Bloque 2 -->
+        <article class="block-card card-b2">
+          <div class="card-top">
+            <span class="block-tag">BLOQUE 02</span>
+            <span class="week-pill">Semana 08</span>
+          </div>
+          <h4 class="block-title">Tema 08: Directrices de implementación para Responsables y Encargados</h4>
+          <div class="badge-cloud">
+            <span class="norm-badge">ISO/IEC 27701:2025</span>
+            <span class="norm-badge">Anexo B</span>
+            <span class="norm-badge">Guías B.1, B.2, B.3</span>
+            <span class="norm-badge">DPIA</span>
+          </div>
+          <p class="block-desc">
+            Directrices de implementación técnica B.1 (Controllers), B.2 (Processors) y B.3 (Controles comunes). Paridad en retiro de consentimiento, gestión de subencargados y evaluaciones de impacto (DPIA/PIA).
+          </p>
+          <div class="block-footer">
+            <div class="block-info-pills">
+              <span>● 12 Preguntas</span>
+              <span>● Teoría & Casos</span>
+            </div>
+            <a href="bloque2.html" class="btn-block-action">
+              Iniciar Bloque 2
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+            </a>
+          </div>
+        </article>
+
+        <!-- Bloque 3 -->
+        <article class="block-card card-b3">
+          <div class="card-top">
+            <span class="block-tag">BLOQUE 03</span>
+            <span class="week-pill">Semana 09</span>
+          </div>
+          <h4 class="block-title">Tema 09: Correspondencia con ISO/IEC 29100 y 11 Principios de Privacidad</h4>
+          <div class="badge-cloud">
+            <span class="norm-badge">ISO/IEC 29100</span>
+            <span class="norm-badge">Anexo C</span>
+            <span class="norm-badge">Tablas C.1 y C.2</span>
+            <span class="norm-badge">Privacy Framework</span>
+          </div>
+          <p class="block-desc">
+            Mapeo formal del marco de privacidad ISO/IEC 29100 con el PIMS. Identificación de principios no aplicables (N/A) para procesadores y correlación entre principios de recolección, exactitud y responsabilidad.
+          </p>
+          <div class="block-footer">
+            <div class="block-info-pills">
+              <span>● 12 Preguntas</span>
+              <span>● Teoría & Casos</span>
+            </div>
+            <a href="bloque3.html" class="btn-block-action">
+              Iniciar Bloque 3
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+            </a>
+          </div>
+        </article>
+
+        <!-- Bloque 4 -->
+        <article class="block-card card-b4">
+          <div class="card-top">
+            <span class="block-tag">BLOQUE 04</span>
+            <span class="week-pill">Semana 10</span>
+          </div>
+          <h4 class="block-title">Tema 10: Correspondencia con GDPR / RGPD y Herramientas SoftExpert</h4>
+          <div class="badge-cloud">
+            <span class="norm-badge">GDPR / RGPD</span>
+            <span class="norm-badge">Anexo D</span>
+            <span class="norm-badge">SoftExpert Data Breach</span>
+            <span class="norm-badge">Art. 33 (72h)</span>
+          </div>
+          <p class="block-desc">
+            Artículos 5, 28, 30 (ROPA) y 33 (Notificación de brechas dentro de 72 horas) del RGPD. Implementación de software de cumplimiento GRC con la suite SoftExpert para trazabilidad auditora.
+          </p>
+          <div class="block-footer">
+            <div class="block-info-pills">
+              <span>● 12 Preguntas</span>
+              <span>● Teoría & Casos</span>
+            </div>
+            <a href="bloque4.html" class="btn-block-action">
+              Iniciar Bloque 4
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+            </a>
+          </div>
+        </article>
+
+        <!-- Bloque 5 -->
+        <article class="block-card card-b5">
+          <div class="card-top">
+            <span class="block-tag">BLOQUE 05</span>
+            <span class="week-pill">Semana 11</span>
+          </div>
+          <h4 class="block-title">Tema 11: Correspondencia con ISO/IEC 27018 e ISO/IEC 29151</h4>
+          <div class="badge-cloud">
+            <span class="norm-badge">ISO/IEC 27018</span>
+            <span class="norm-badge">ISO/IEC 29151</span>
+            <span class="norm-badge">Anexo E</span>
+            <span class="norm-badge">Cloud Processors</span>
+          </div>
+          <p class="block-desc">
+            Códigos de práctica para protección de PII en nubes públicas (ISO 27018) y directrices para responsables (ISO 29151). Control de requerimientos judiciales, cifrado en tránsito interno y destrucción segura de datos.
+          </p>
+          <div class="block-footer">
+            <div class="block-info-pills">
+              <span>● 12 Preguntas</span>
+              <span>● Teoría & Casos</span>
+            </div>
+            <a href="bloque5.html" class="btn-block-action">
+              Iniciar Bloque 5
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+            </a>
+          </div>
+        </article>
+
+        <!-- Integral Simulator Banner Card -->
+        <article class="integral-card">
+          <div class="integral-info">
+            <div class="integral-tag">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              <span>Examen Parcial Completo</span>
+            </div>
+            <h4 class="integral-title">Simulador Integral Unidad 2 (60 Preguntas)</h4>
+            <p class="integral-desc">
+              Evalúa todos los bloques en una sola sesión de auditoría integral. Incluye temporizador continuo, navegación rápida por 60 tarjetas, alternador de filtros por tema y emisión del Dictamen de Certificación Auditor Líder.
+            </p>
+          </div>
+          <a href="integral.html" class="btn-integral-main">
+            Iniciar Examen Integral
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+          </a>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-content">
+      <p style="font-weight: 700; color: var(--text-main);">
+        Simulador de Evaluación de Auditoría de Sistemas — Unidad 2 (PIMS & Privacidad)
+      </p>
+      <p class="footer-meta">
+        Basado en ISO/IEC 27701:2025 (Edición 2) • ISO/IEC 27001 • GDPR/RGPD • ISO/IEC 29100 • ISO/IEC 27018 • ISO/IEC 29151
+      </p>
+      <p class="footer-meta" style="margin-top: 4px; color: var(--accent-cyan);">
+        Universidad Nacional de San Agustín de Arequipa (UNSA) — Facultad de Ingeniería de Producción y Servicios (FIIS)
+      </p>
+    </div>
+  </footer>
+</body>
+</html>
